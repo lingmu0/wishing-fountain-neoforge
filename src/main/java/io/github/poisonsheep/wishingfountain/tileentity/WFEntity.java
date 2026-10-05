@@ -18,9 +18,6 @@ import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.storage.ValueInput;
 import net.minecraft.world.level.storage.ValueOutput;
-import net.minecraft.world.phys.AABB;
-import net.neoforged.api.distmarker.Dist;
-import net.neoforged.api.distmarker.OnlyIn;
 import net.neoforged.neoforge.items.ItemStackHandler;
 import org.jetbrains.annotations.NotNull;
 
@@ -128,12 +125,6 @@ public class WFEntity extends BlockEntity {
     public void setTextureIndex(int textureIndex) {
         this.textureIndex = textureIndex;
         refresh();
-    }
-
-    @OnlyIn(Dist.CLIENT)
-    public AABB getRenderBoundingBox() {
-        return new AABB(worldPosition.getX() - 3, worldPosition.getY() - 2, worldPosition.getZ() - 3,
-                worldPosition.getX() + 3, worldPosition.getY() + 2, worldPosition.getZ() + 3);
     }
 
     @NotNull

@@ -20,6 +20,7 @@ import net.minecraft.util.RandomSource;
 import net.minecraft.util.Unit;
 import net.minecraft.world.item.ItemDisplayContext;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 import org.jspecify.annotations.Nullable;
 
@@ -66,13 +67,13 @@ public class WFRender implements BlockEntityRenderer<WFEntity, WFRenderState> {
             poseStack.mulPose(Axis.ZN.rotationDegrees(180));
             if (state.textureIndex == 1) {
                 collector.submitModel(monokumaModel, Unit.INSTANCE, poseStack, monokumaModel.renderType(MONOKUMA_TEXTURE),
-                        state.lightCoords, OverlayTexture.NO_OVERLAY, -1, state.breakProgress);
+                        state.lightCoords, OverlayTexture.NO_OVERLAY, 0, state.breakProgress);
             } else if (state.textureIndex == 2) {
                 collector.submitModel(nepModel, Unit.INSTANCE, poseStack, nepModel.renderType(NEP_TEXTURE),
-                        state.lightCoords, OverlayTexture.NO_OVERLAY, -1, state.breakProgress);
+                        state.lightCoords, OverlayTexture.NO_OVERLAY, 0, state.breakProgress);
             } else {
                 collector.submitModel(defaultModel, Unit.INSTANCE, poseStack, defaultModel.renderType(DEFAULT_TEXTURE),
-                        state.lightCoords, OverlayTexture.NO_OVERLAY, -1, state.breakProgress);
+                        state.lightCoords, OverlayTexture.NO_OVERLAY, 0, state.breakProgress);
             }
             poseStack.popPose();
         }
@@ -96,6 +97,13 @@ public class WFRender implements BlockEntityRenderer<WFEntity, WFRenderState> {
     @Override
     public boolean shouldRenderOffScreen() {
         return true;
+    }
+
+    @Override
+    public AABB getRenderBoundingBox(WFEntity entity) {
+        var pos = entity.getBlockPos();
+        return new AABB(pos.getX() - 4, pos.getY() - 3, pos.getZ() - 4,
+                pos.getX() + 5, pos.getY() + 6, pos.getZ() + 5);
     }
 
     private void setTranslateAndPose(Direction direction, PoseStack stack) {
