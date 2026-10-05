@@ -19,6 +19,7 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.item.ItemDisplayContext;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.phys.AABB;
 import org.jetbrains.annotations.NotNull;
 
 public class WFRender implements BlockEntityRenderer<WFEntity> {
@@ -85,6 +86,13 @@ public class WFRender implements BlockEntityRenderer<WFEntity> {
     @Override
     public boolean shouldRenderOffScreen(@NotNull WFEntity entity) {
         return true;
+    }
+
+    @Override
+    public AABB getRenderBoundingBox(WFEntity entity) {
+        var pos = entity.getBlockPos();
+        return new AABB(pos.getX() - 4, pos.getY() - 3, pos.getZ() - 4,
+                pos.getX() + 5, pos.getY() + 6, pos.getZ() + 5);
     }
 
     private void setTranslateAndPose(WFEntity entity, PoseStack stack) {
