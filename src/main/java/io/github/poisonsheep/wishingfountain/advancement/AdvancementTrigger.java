@@ -2,22 +2,22 @@ package io.github.poisonsheep.wishingfountain.advancement;
 
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import net.minecraft.advancements.critereon.SimpleCriterionTrigger.SimpleInstance;
-import net.minecraft.advancements.critereon.ContextAwarePredicate;
-import net.minecraft.advancements.critereon.SimpleCriterionTrigger;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.advancements.criterion.SimpleCriterionTrigger.SimpleInstance;
+import net.minecraft.advancements.criterion.ContextAwarePredicate;
+import net.minecraft.advancements.criterion.SimpleCriterionTrigger;
+import net.minecraft.resources.Identifier;
 import net.minecraft.server.level.ServerPlayer;
 
 import java.util.Optional;
 
 public class AdvancementTrigger extends SimpleCriterionTrigger<AdvancementTrigger.TriggerInstance> {
-    public final ResourceLocation ID;
+    public final Identifier ID;
 
-    public AdvancementTrigger(ResourceLocation id) {
+    public AdvancementTrigger(Identifier id) {
         this.ID = id;
     }
 
-    public ResourceLocation getId() {
+    public Identifier getId() {
         return ID;
     }
 

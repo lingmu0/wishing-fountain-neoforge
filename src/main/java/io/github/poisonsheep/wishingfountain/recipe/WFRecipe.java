@@ -10,7 +10,7 @@ import net.minecraft.core.HolderLookup;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.core.NonNullList;
 import net.minecraft.core.particles.ParticleTypes;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
@@ -21,6 +21,8 @@ import net.minecraft.world.item.crafting.Ingredient;
 import net.minecraft.world.item.crafting.Recipe;
 import net.minecraft.world.item.crafting.RecipeSerializer;
 import net.minecraft.world.item.crafting.RecipeType;
+import net.minecraft.world.item.crafting.PlacementInfo;
+import net.minecraft.world.item.crafting.RecipeBookCategories;
 import net.minecraft.world.level.Level;
 
 import java.util.ArrayList;
@@ -42,13 +44,25 @@ public class WFRecipe implements Recipe<WFRecipeInventory> {
             if(wishType.equals("weather")) {
                 switch (target) {
                     case "clear":
-                        server.setWeatherParameters(36000, 0, false, false);
+                        server.getWeatherData().setClearWeatherTime(36000);
+                        server.getWeatherData().setRainTime(0);
+                        server.getWeatherData().setThunderTime(0);
+                        server.getWeatherData().setRaining(false);
+                        server.getWeatherData().setThundering(false);
                         break;
                     case "rain":
-                        server.setWeatherParameters(0, 36000, true, false);
+                        server.getWeatherData().setClearWeatherTime(0);
+                        server.getWeatherData().setRainTime(36000);
+                        server.getWeatherData().setThunderTime(0);
+                        server.getWeatherData().setRaining(true);
+                        server.getWeatherData().setThundering(false);
                         break;
                     case "thunder":
-                        server.setWeatherParameters(0, 36000, true, true);
+                        server.getWeatherData().setClearWeatherTime(0);
+                        server.getWeatherData().setRainTime(36000);
+                        server.getWeatherData().setThunderTime(36000);
+                        server.getWeatherData().setRaining(true);
+                        server.getWeatherData().setThundering(true);
                         break;
                     default:
                         break;
@@ -92,16 +106,10 @@ public class WFRecipe implements Recipe<WFRecipeInventory> {
     }
 
     @Override
-    public ItemStack assemble(WFRecipeInventory inv, HolderLookup.Provider registries) {
-        return getResultItem(registries).copy();
+    public ItemStack assemble(WFRecipeInventory inv) {
+        return extractItem();
     }
 
-    @Override
-    public boolean canCraftInDimensions(int width, int height) {
-        return false;
-    }
-
-    @Override
     public ItemStack getResultItem(HolderLookup.Provider registries) {
         return extractItem();
     }
@@ -115,7 +123,7 @@ public class WFRecipe implements Recipe<WFRecipeInventory> {
             itemStack = new ItemStack(ItemRegistry.WF_STRUCTURE_MAP.get());
             WFStructureMap.setTarget(itemStack, target);
         } else if(wishType.equals("item")) {
-            ResourceLocation itemId = ResourceLocation.tryParse(target);
+            Identifier itemId = Identifier.tryParse(target);
             if (itemId != null) {
                 Item item = BuiltInRegistries.ITEM.getOptional(itemId).orElse(null);
                 if (item != null) {
@@ -127,19 +135,38 @@ public class WFRecipe implements Recipe<WFRecipeInventory> {
         return itemStack;
     }
 
-    @Override
     public NonNullList<Ingredient> getIngredients() {
         return ingredients;
     }
 
     @Override
-    public RecipeSerializer<?> getSerializer() {
+    public RecipeSerializer<WFRecipe> getSerializer() {
         return RecipeRegistry.WF_RECIPE_SERIALIZER.get();
     }
 
     @Override
-    public RecipeType<?> getType() {
+    public RecipeType<WFRecipe> getType() {
         return RecipeRegistry.WF_RECIPE_TYPE.get();
+    }
+
+    @Override
+    public boolean showNotification() {
+        return false;
+    }
+
+    @Override
+    public String group() {
+        return "";
+    }
+
+    @Override
+    public PlacementInfo placementInfo() {
+        return PlacementInfo.NOT_PLACEABLE;
+    }
+
+    @Override
+    public net.minecraft.world.item.crafting.RecipeBookCategory recipeBookCategory() {
+        return RecipeBookCategories.CRAFTING_MISC;
     }
 
     public String getMapType() {

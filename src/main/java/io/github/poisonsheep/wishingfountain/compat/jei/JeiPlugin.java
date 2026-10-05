@@ -4,14 +4,14 @@ import io.github.poisonsheep.wishingfountain.WishingFountain;
 import mezz.jei.api.IModPlugin;
 import mezz.jei.api.registration.IRecipeCategoryRegistration;
 import mezz.jei.api.registration.IRecipeRegistration;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 
 @mezz.jei.api.JeiPlugin
 public class JeiPlugin implements IModPlugin {
-    private static final ResourceLocation UID = WishingFountain.id("jei");
+    private static final Identifier UID = WishingFountain.id("jei");
 
     @Override
-    public ResourceLocation getPluginUid() {
+    public Identifier getPluginUid() {
         return UID;
     }
 

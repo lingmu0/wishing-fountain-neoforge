@@ -16,7 +16,7 @@ public class WFRecipeWrapper {
         this.output = output;
         for (Ingredient input : inputs) {
             if (!input.isEmpty()) {
-                this.inputs.add(Lists.newArrayList(input.getItems()));
+                this.inputs.add(Lists.newArrayList(input.items().map(holder -> new ItemStack(holder.value())).toList()));
             }
         }
         this.langKey = langKey;

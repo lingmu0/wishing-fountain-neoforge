@@ -5,7 +5,7 @@ import io.github.poisonsheep.wishingfountain.recipe.WFRecipe;
 import io.github.poisonsheep.wishingfountain.registry.RecipeRegistry;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientLevel;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.crafting.RecipeManager;
 import net.minecraft.world.item.crafting.RecipeHolder;
@@ -22,7 +22,7 @@ public final class WFRecipeMaker {
 
     private WFRecipeMaker() {
         ClientLevel world = Objects.requireNonNull(Minecraft.getInstance().level);
-        this.recipeManager = world.getRecipeManager();
+        this.recipeManager = (RecipeManager) Objects.requireNonNull(Minecraft.getInstance().getConnection()).recipes();
     }
 
     public static WFRecipeMaker getInstance() {
@@ -30,11 +30,14 @@ public final class WFRecipeMaker {
     }
 
     public List<WFRecipeWrapper> getAltarRecipes() {
-        List<RecipeHolder<WFRecipe>> wfRecipes = recipeManager.getAllRecipesFor(RecipeRegistry.WF_RECIPE_TYPE.get());
+        List<RecipeHolder<WFRecipe>> wfRecipes = recipeManager.getRecipes().stream()
+                .filter(holder -> holder.value() instanceof WFRecipe)
+                .map(holder -> (RecipeHolder<WFRecipe>) (RecipeHolder<?>) holder)
+                .toList();
         List<WFRecipeWrapper> recipes = Lists.newArrayList();
         for (RecipeHolder<WFRecipe> holder : wfRecipes) {
             WFRecipe recipe = holder.value();
-            ResourceLocation recipeId = holder.id();
+            Identifier recipeId = holder.id().identifier();
             ItemStack output = recipe.getResultItem((HolderLookup.Provider) Minecraft.getInstance().level.registryAccess());
             String namespace = recipeId.getNamespace().toLowerCase(Locale.US);
             String langKey;

@@ -2,7 +2,6 @@ package io.github.poisonsheep.wishingfountain.registry;
 
 import io.github.poisonsheep.wishingfountain.WishingFountain;
 import io.github.poisonsheep.wishingfountain.recipe.WFRecipe;
-import io.github.poisonsheep.wishingfountain.recipe.WFRecipeSerializer;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.world.item.crafting.RecipeSerializer;
 import net.minecraft.world.item.crafting.RecipeType;
@@ -22,8 +21,8 @@ public final class RecipeRegistry {
 
     public static final DeferredRegister<RecipeSerializer<?>> DEF_REG =
             DeferredRegister.create(Registries.RECIPE_SERIALIZER, WishingFountain.MODID);
-    public static final DeferredHolder<RecipeSerializer<?>, WFRecipeSerializer> WF_RECIPE_SERIALIZER =
-            DEF_REG.register("wishing_fountain_recipe", WFRecipeSerializer::new);
+    public static final DeferredHolder<RecipeSerializer<?>, RecipeSerializer<WFRecipe>> WF_RECIPE_SERIALIZER =
+            DEF_REG.register("wishing_fountain_recipe", io.github.poisonsheep.wishingfountain.recipe.WFRecipeSerializer::create);
 
     private RecipeRegistry() {}
 }

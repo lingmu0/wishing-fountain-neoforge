@@ -1,36 +1,26 @@
 package io.github.poisonsheep.wishingfountain.util;
 
-import com.google.common.collect.Lists;
+import com.mojang.serialization.Codec;
 import net.minecraft.core.BlockPos;
-import net.minecraft.nbt.ListTag;
-import net.minecraft.nbt.NbtOps;
-import net.minecraft.nbt.NbtUtils;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public final class PosListData {
-    private final List<BlockPos> data = Lists.newArrayList();
+    public static final Codec<List<BlockPos>> CODEC = BlockPos.CODEC.listOf();
 
-    public ListTag serialize() {
-        ListTag nbt = new ListTag();
-        for (BlockPos pos : data) {
-            nbt.add(NbtUtils.writeBlockPos(pos));
-        }
-        return nbt;
-    }
-
-    public void deserialize(ListTag nbt) {
-        data.clear();
-        for (int i = 0; i < nbt.size(); i++) {
-            BlockPos.CODEC.parse(NbtOps.INSTANCE, nbt.get(i)).result().ifPresent(data::add);
-        }
-    }
+    private final List<BlockPos> data = new ArrayList<>();
 
     public List<BlockPos> getData() {
         return data;
     }
 
+    public void setData(List<BlockPos> positions) {
+        data.clear();
+        data.addAll(positions);
+    }
+
     public void add(BlockPos pos) {
-        this.data.add(pos);
+        data.add(pos);
     }
 }

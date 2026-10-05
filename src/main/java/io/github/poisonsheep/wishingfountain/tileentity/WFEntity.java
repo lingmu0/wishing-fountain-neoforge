@@ -6,7 +6,6 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
-import net.minecraft.nbt.Tag;
 import net.minecraft.network.protocol.Packet;
 import net.minecraft.network.protocol.game.ClientGamePacketListener;
 import net.minecraft.network.protocol.game.ClientboundBlockEntityDataPacket;
@@ -17,6 +16,8 @@ import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.storage.ValueInput;
+import net.minecraft.world.level.storage.ValueOutput;
 import net.minecraft.world.phys.AABB;
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.api.distmarker.OnlyIn;
@@ -27,7 +28,7 @@ import javax.annotation.Nullable;
 
 public class WFEntity extends BlockEntity {
 
-    public static final BlockEntityType<WFEntity> TYPE = BlockEntityType.Builder.of(WFEntity::new, BlockRegistry.WISHING_FOUNTAIN.get()).build(null);
+    public static final BlockEntityType<WFEntity> TYPE = new BlockEntityType<>(WFEntity::new, BlockRegistry.WISHING_FOUNTAIN.get());
     private static final String STORAGE_ITEM = "StorageItem";
     private static final String STORAGE_STATE_ID = "StorageBlockStateId";
     private static final String STORAGE_BLOCK_LIST = "StorageBlockList";
@@ -75,30 +76,30 @@ public class WFEntity extends BlockEntity {
     }
 
     @Override
-    protected void saveAdditional(CompoundTag compound, HolderLookup.Provider registries) {
-        compound.putBoolean(IS_RENDER, isRender);
-        compound.putBoolean(CAN_PLACE_ITEM, canPlaceItem);
-        compound.putInt(STORAGE_STATE_ID, Block.getId(storageState));
-        compound.putInt(TEXTURE_INDEX, textureIndex);
-        compound.putString(DIRECTION, direction.getSerializedName());
-        compound.put(STORAGE_BLOCK_LIST, blockPosList.serialize());
-        compound.put(STORAGE_ITEM, handler.serializeNBT(registries));
-        super.saveAdditional(compound, registries);
+    protected void saveAdditional(ValueOutput output) {
+        super.saveAdditional(output);
+        output.putBoolean(IS_RENDER, isRender);
+        output.putBoolean(CAN_PLACE_ITEM, canPlaceItem);
+        output.putInt(STORAGE_STATE_ID, Block.getId(storageState));
+        output.putInt(TEXTURE_INDEX, textureIndex);
+        output.putString(DIRECTION, direction.getSerializedName());
+        output.store(STORAGE_BLOCK_LIST, PosListData.CODEC, blockPosList.getData());
+        output.store(STORAGE_ITEM, ItemStack.CODEC, handler.getStackInSlot(0));
     }
 
     @Override
-    protected void loadAdditional(CompoundTag nbt, HolderLookup.Provider registries) {
-        super.loadAdditional(nbt, registries);
-        isRender = nbt.getBoolean(IS_RENDER);
-        canPlaceItem = nbt.getBoolean(CAN_PLACE_ITEM);
-        storageState = Block.stateById(nbt.getInt(STORAGE_STATE_ID));
-        textureIndex = nbt.getInt(TEXTURE_INDEX);
-        direction = Direction.byName(nbt.getString(DIRECTION));
+    protected void loadAdditional(ValueInput input) {
+        super.loadAdditional(input);
+        isRender = input.getBooleanOr(IS_RENDER, false);
+        canPlaceItem = input.getBooleanOr(CAN_PLACE_ITEM, false);
+        storageState = Block.stateById(input.getIntOr(STORAGE_STATE_ID, 0));
+        textureIndex = input.getIntOr(TEXTURE_INDEX, 0);
+        direction = Direction.byName(input.getStringOr(DIRECTION, "south"));
         if (direction == null) {
             direction = Direction.SOUTH;
         }
-        blockPosList.deserialize(nbt.getList(STORAGE_BLOCK_LIST, Tag.TAG_COMPOUND));
-        handler.deserializeNBT(registries, nbt.getCompound(STORAGE_ITEM));
+        blockPosList.setData(input.read(STORAGE_BLOCK_LIST, PosListData.CODEC).orElse(java.util.List.of()));
+        handler.setStackInSlot(0, input.read(STORAGE_ITEM, ItemStack.CODEC).orElse(ItemStack.EMPTY));
     }
 
     public ItemStack getStorageItem() {

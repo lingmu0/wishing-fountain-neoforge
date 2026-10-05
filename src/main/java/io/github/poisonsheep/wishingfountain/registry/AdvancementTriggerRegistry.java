@@ -3,7 +3,7 @@ package io.github.poisonsheep.wishingfountain.registry;
 import io.github.poisonsheep.wishingfountain.advancement.AdvancementTrigger;
 import io.github.poisonsheep.wishingfountain.WishingFountain;
 import net.minecraft.advancements.CriteriaTriggers;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 
 public class AdvancementTriggerRegistry {
     public static AdvancementTrigger SET_SAIL = new AdvancementTrigger(WishingFountain.id("set_sail"));

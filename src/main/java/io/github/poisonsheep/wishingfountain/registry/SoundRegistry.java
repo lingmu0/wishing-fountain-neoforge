@@ -1,7 +1,7 @@
 package io.github.poisonsheep.wishingfountain.registry;
 
 import io.github.poisonsheep.wishingfountain.WishingFountain;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.sounds.SoundEvent;
 import net.neoforged.neoforge.registries.DeferredRegister;
 import net.minecraft.core.registries.Registries;

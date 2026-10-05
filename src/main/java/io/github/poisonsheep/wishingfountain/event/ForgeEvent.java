@@ -5,10 +5,11 @@ import io.github.poisonsheep.wishingfountain.block.multiblock.IMultiBlock;
 import io.github.poisonsheep.wishingfountain.block.multiblock.MultiBlockManager;
 import io.github.poisonsheep.wishingfountain.config.CommonConfigs;
 import io.github.poisonsheep.wishingfountain.registry.AdvancementTriggerRegistry;
+import io.github.poisonsheep.wishingfountain.item.WFMapItem;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.network.chat.Component;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
@@ -31,13 +32,13 @@ public class ForgeEvent {
         Player player = event.getEntity();
         Level worldIn = player.level();
         Direction direction = player.getDirection();
-        if (!worldIn.isClientSide) {
+        if (!worldIn.isClientSide()) {
             List<ItemEntity> itemEntityList = worldIn.getEntitiesOfClass(ItemEntity.class, player.getBoundingBox().inflate(32.0F));
             for (ItemEntity itemEntity : itemEntityList) {
                 ItemStack itemStack = itemEntity.getItem();
                 // 检查物品是否可以用于创建结构
-                ResourceLocation triggerId = ResourceLocation.tryParse(CommonConfigs.TRIGGER_ITEM.get());
-                Item triggerItem = triggerId == null ? null : BuiltInRegistries.ITEM.get(triggerId);
+                Identifier triggerId = Identifier.tryParse(CommonConfigs.TRIGGER_ITEM.get());
+                Item triggerItem = triggerId == null ? null : BuiltInRegistries.ITEM.getOptional(triggerId).orElse(null);
                 if (itemStack.getItem() == triggerItem) {
                     List<IMultiBlock> multiBlockList = MultiBlockManager.getMultiBlockList();
                     BlockPos pos = itemEntity.blockPosition();
@@ -52,10 +53,10 @@ public class ForgeEvent {
                                 if (multiBlock.isMatch(worldIn, posStart, targetTemplate)) {
                                     String requiredBp = getRequiredBlueprint();
                                     if (requiredBp != null && !hasBlueprint(player, requiredBp)) {
-                                        player.displayClientMessage(Component.translatable(
+                                        player.sendOverlayMessage(Component.translatable(
                                             "message.wishing_fountain.need_blueprint",
                                             Component.translatable(requiredBp.replace(":", "."))
-                                        ), true);
+                                        ));
                                         continue;
                                     }
                                     multiBlock.build(worldIn, posStart, structureTemplate, direction);
@@ -72,6 +73,20 @@ public class ForgeEvent {
                             }
                         }
                     }
+                }
+            }
+
+            if (worldIn instanceof ServerLevel serverLevel) {
+                var inventory = player.getInventory();
+                for (int slot = 0; slot < inventory.getNonEquipmentItems().size(); slot++) {
+                    ItemStack stack = inventory.getItem(slot);
+                    if (stack.getItem() instanceof WFMapItem mapItem) {
+                        mapItem.tickSearch(stack, serverLevel, player, slot);
+                    }
+                }
+                ItemStack offhand = player.getOffhandItem();
+                if (offhand.getItem() instanceof WFMapItem mapItem) {
+                    mapItem.tickSearch(offhand, serverLevel, player, -1);
                 }
             }
         }

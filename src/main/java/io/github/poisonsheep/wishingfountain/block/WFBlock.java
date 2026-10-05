@@ -11,14 +11,15 @@ import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
-import net.minecraft.world.ItemInteractionResult;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.item.ItemEntity;
+import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.InsideBlockEffectApplier;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
-import net.minecraft.world.item.PickaxeItem;
+import net.minecraft.tags.ItemTags;
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.Explosion;
 import net.minecraft.world.level.Level;
@@ -94,15 +95,12 @@ public class WFBlock extends BaseEntityBlock implements SimpleWaterloggedBlock {
     }
 
     @Override
-    protected ItemInteractionResult useItemOn(ItemStack stack, BlockState state, Level worldIn, BlockPos pos,
+    protected InteractionResult useItemOn(ItemStack stack, BlockState state, Level worldIn, BlockPos pos,
                                                 Player player, InteractionHand hand, BlockHitResult hit) {
-        if (hand != InteractionHand.MAIN_HAND) return ItemInteractionResult.PASS_TO_DEFAULT_BLOCK_INTERACTION;
-        return this.getEntity(worldIn, pos).filter(WFEntity::isCanPlaceItem).map(wishingFountain -> {
-            InteractionResult result = takeInItem(worldIn, wishingFountain, player);
-            if (result.consumesAction()) return ItemInteractionResult.sidedSuccess(worldIn.isClientSide);
-            return result == InteractionResult.FAIL ? ItemInteractionResult.FAIL
-                    : ItemInteractionResult.PASS_TO_DEFAULT_BLOCK_INTERACTION;
-        }).orElse(super.useItemOn(stack, state, worldIn, pos, player, hand, hit));
+        if (hand != InteractionHand.MAIN_HAND) return InteractionResult.PASS;
+        return this.getEntity(worldIn, pos).filter(WFEntity::isCanPlaceItem)
+                .map(wishingFountain -> takeInItem(worldIn, wishingFountain, player))
+                .orElse(super.useItemOn(stack, state, worldIn, pos, player, hand, hit));
     }
 
     private InteractionResult takeOutItem(Level worldIn, WFEntity wishingFountain, Player player) {
@@ -117,7 +115,7 @@ public class WFBlock extends BaseEntityBlock implements SimpleWaterloggedBlock {
             }
             craft(worldIn, wishingFountain, player);
             wishingFountain.refresh();
-            return InteractionResult.sidedSuccess(worldIn.isClientSide);
+            return InteractionResult.SUCCESS;
         }
         return InteractionResult.FAIL;
     }
@@ -130,13 +128,13 @@ public class WFBlock extends BaseEntityBlock implements SimpleWaterloggedBlock {
             wishingFountain.handler.insertItem(0, singleItemStack, false);
             craft(worldIn, wishingFountain, playerIn);
             wishingFountain.refresh();
-            return InteractionResult.sidedSuccess(worldIn.isClientSide);
+            return InteractionResult.SUCCESS;
         }
         return InteractionResult.FAIL;
     }
 
     @Override
-    public void entityInside(BlockState state, Level worldIn, BlockPos pos, Entity entity) {
+    protected void entityInside(BlockState state, Level worldIn, BlockPos pos, Entity entity, InsideBlockEffectApplier effectApplier, boolean isInside) {
         if (!worldIn.isClientSide() && entity instanceof ItemEntity itemEntity && worldIn.getBlockEntity(pos) instanceof WFEntity wishingFountain) {
             if(wishingFountain.isCanPlaceItem()) {
                 wishingFountain.addItem(itemEntity);
@@ -150,25 +148,25 @@ public class WFBlock extends BaseEntityBlock implements SimpleWaterloggedBlock {
     }
 
     @Override
-    public void onRemove(BlockState state, Level worldIn, BlockPos pos, BlockState newState, boolean isMoving) {
-        if (!worldIn.isClientSide) {
-            this.getEntity(worldIn, pos).ifPresent(altar -> {
+    public void destroy(LevelAccessor accessor, BlockPos pos, BlockState state) {
+        if (accessor instanceof Level worldIn && !worldIn.isClientSide()) {
+            this.getEntity(accessor, pos).ifPresent(altar -> {
                 ItemStack stack = altar.handler.getStackInSlot(0);
                 if (!stack.isEmpty()) {
                     Block.popResource(worldIn, pos.offset(0, 1, 0), stack);
                 }
             });
         }
-        super.onRemove(state, worldIn, pos, newState, isMoving);
+        super.destroy(accessor, pos, state);
     }
 
     @Override
     public BlockState playerWillDestroy(Level worldIn, BlockPos pos, BlockState state, Player player) {
-        if (!worldIn.isClientSide) {
+        if (!worldIn.isClientSide()) {
             this.getEntity(worldIn, pos).ifPresent(entity -> {
                 this.restoreStorageBlock(worldIn, pos, entity.getBlockPosList());
                 ItemStack mainHandItem = player.getMainHandItem();
-                if (!player.isCreative() && mainHandItem.getItem() instanceof PickaxeItem) {
+                if (!player.isCreative() && mainHandItem.is(ItemTags.PICKAXES)) {
                     Block block = entity.getStorageState().getBlock();
                     Block.popResource(worldIn, pos, new ItemStack(block));
                 }
@@ -178,11 +176,9 @@ public class WFBlock extends BaseEntityBlock implements SimpleWaterloggedBlock {
     }
 
     @Override
-    public void onBlockExploded(BlockState state, Level worldIn, BlockPos pos, Explosion explosion) {
-        if (!worldIn.isClientSide) {
-            this.getEntity(worldIn, pos).ifPresent(altar -> this.restoreStorageBlock(worldIn, pos, altar.getBlockPosList()));
-        }
-        super.onBlockExploded(state, worldIn, pos, explosion);
+    public void wasExploded(ServerLevel worldIn, BlockPos pos, Explosion explosion) {
+        this.getEntity(worldIn, pos).ifPresent(altar -> this.restoreStorageBlock(worldIn, pos, altar.getBlockPosList()));
+        super.wasExploded(worldIn, pos, explosion);
     }
 
     private void restoreStorageBlock(Level worldIn, BlockPos currentPos, PosListData posList) {
@@ -213,8 +209,11 @@ public class WFBlock extends BaseEntityBlock implements SimpleWaterloggedBlock {
                 }
             }
         }
+        if (!(worldIn instanceof ServerLevel serverLevel)) {
+            return;
+        }
         Optional<net.minecraft.world.item.crafting.RecipeHolder<WFRecipe>> optionalRecipe =
-                worldIn.getRecipeManager().getRecipeFor(RecipeRegistry.WF_RECIPE_TYPE.get(), inv, worldIn);
+                serverLevel.getServer().getRecipeManager().getRecipeFor(RecipeRegistry.WF_RECIPE_TYPE.get(), inv, serverLevel);
         optionalRecipe.ifPresent(holder -> holder.value().spawnOutputEntity(worldIn, player.getOnPos()));
         optionalRecipe.ifPresent(holder -> removeIngredients(worldIn, inv, posList));
     }
@@ -269,7 +268,7 @@ public class WFBlock extends BaseEntityBlock implements SimpleWaterloggedBlock {
     }
 
     @Override
-    public boolean canPlaceLiquid(Player player, BlockGetter getter, BlockPos pos, BlockState state, Fluid fluid) {
+    public boolean canPlaceLiquid(LivingEntity player, BlockGetter getter, BlockPos pos, BlockState state, Fluid fluid) {
         if(!(state.getValue(FOUNTAIN) == 2)) {
             return false;
         }
@@ -277,7 +276,7 @@ public class WFBlock extends BaseEntityBlock implements SimpleWaterloggedBlock {
     }
 
     @Override
-    public ItemStack pickupBlock(Player player, LevelAccessor accessor, BlockPos pos, BlockState state) {
+    public ItemStack pickupBlock(LivingEntity player, LevelAccessor accessor, BlockPos pos, BlockState state) {
         if(state.getValue(FOUNTAIN) == 2) {
             return new ItemStack(Items.WATER_BUCKET);
         }
@@ -291,11 +290,6 @@ public class WFBlock extends BaseEntityBlock implements SimpleWaterloggedBlock {
 
     @Override
     public RenderShape getRenderShape(BlockState state) {
-        return RenderShape.ENTITYBLOCK_ANIMATED;
-    }
-
-    @Override
-    public void updateEntityAfterFallOn(BlockGetter worldIn, Entity entity) {
-        super.updateEntityAfterFallOn(worldIn, entity);
+        return RenderShape.INVISIBLE;
     }
 }

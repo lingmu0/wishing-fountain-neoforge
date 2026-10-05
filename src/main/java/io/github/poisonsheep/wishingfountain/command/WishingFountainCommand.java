@@ -10,11 +10,11 @@ import io.github.poisonsheep.wishingfountain.registry.ItemRegistry;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
 import net.minecraft.commands.SharedSuggestionProvider;
-import net.minecraft.commands.arguments.ResourceLocationArgument;
+import net.minecraft.commands.arguments.IdentifierArgument;
 import net.minecraft.core.Registry;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.network.chat.Component;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.biome.Biome;
@@ -28,22 +28,22 @@ public class WishingFountainCommand {
     public static void register(CommandDispatcher<CommandSourceStack> dispatcher) {
         final LiteralArgumentBuilder<CommandSourceStack> literalArgumentBuilder_debug =
                 Commands.literal("wfdebug")
-                        .requires(ctx -> ctx.hasPermission(4));
+                        .requires(Commands.hasPermission(Commands.LEVEL_ADMINS));
         final LiteralArgumentBuilder<CommandSourceStack> literalArgumentBuilder_locate =
                 Commands.literal("locate")
-                        .requires(ctx -> ctx.hasPermission(4));
+                        .requires(Commands.hasPermission(Commands.LEVEL_ADMINS));
         literalArgumentBuilder_locate.then(Commands.literal("biome")
-                .then(Commands.argument("biome", ResourceLocationArgument.id())
+                .then(Commands.argument("biome", IdentifierArgument.id())
                         .suggests((context, builder) -> {
-                            Registry<Biome> registry = context.getSource().registryAccess().registryOrThrow(Registries.BIOME);
+                            Registry<Biome> registry = context.getSource().registryAccess().lookup(Registries.BIOME).orElseThrow();
                             return SharedSuggestionProvider.suggestResource(registry.keySet(), builder);
                         })
                         .executes(WishingFountainCommand::searchBiome)));
 
         literalArgumentBuilder_locate.then(Commands.literal("structure")
-                .then(Commands.argument("structure", ResourceLocationArgument.id())
+                .then(Commands.argument("structure", IdentifierArgument.id())
                         .suggests((context, builder) -> {
-                            Registry<Structure> registry = context.getSource().registryAccess().registryOrThrow(Registries.STRUCTURE);
+                            Registry<Structure> registry = context.getSource().registryAccess().lookup(Registries.STRUCTURE).orElseThrow();
                             return SharedSuggestionProvider.suggestResource(registry.keySet(), builder);
                         })
                         .executes(WishingFountainCommand::searchStructure)));
@@ -54,7 +54,7 @@ public class WishingFountainCommand {
     private static int searchBiome(CommandContext<CommandSourceStack> context) throws CommandSyntaxException {
         CommandSourceStack source = context.getSource();
         ServerPlayer player = source.getPlayerOrException();
-        ResourceLocation biomeId = ResourceLocationArgument.getId(context, "biome");
+        Identifier biomeId = IdentifierArgument.getId(context, "biome");
 
         if (!isBiomeRegistered(player, biomeId)) {
             source.sendFailure(Component.literal("§c未知的群系: " + biomeId));
@@ -71,7 +71,7 @@ public class WishingFountainCommand {
     private static int searchStructure(CommandContext<CommandSourceStack> context) throws CommandSyntaxException {
         CommandSourceStack source = context.getSource();
         ServerPlayer player = source.getPlayerOrException();
-        ResourceLocation structureId = ResourceLocationArgument.getId(context, "structure");
+        Identifier structureId = IdentifierArgument.getId(context, "structure");
 
         if (!isStructureRegistered(player, structureId)) {
             source.sendFailure(Component.literal("§c未知的结构: " + structureId));
@@ -85,13 +85,13 @@ public class WishingFountainCommand {
         return 1;
     }
 
-    private static boolean isBiomeRegistered(ServerPlayer player, ResourceLocation biomeId) {
-        Registry<Biome> registry = player.server.registryAccess().registryOrThrow(Registries.BIOME);
+    private static boolean isBiomeRegistered(ServerPlayer player, Identifier biomeId) {
+        Registry<Biome> registry = player.level().registryAccess().lookup(Registries.BIOME).orElseThrow();
         return registry.containsKey(biomeId);
     }
 
-    private static boolean isStructureRegistered(ServerPlayer player, ResourceLocation structureId) {
-        Registry<Structure> registry = player.server.registryAccess().registryOrThrow(Registries.STRUCTURE);
+    private static boolean isStructureRegistered(ServerPlayer player, Identifier structureId) {
+        Registry<Structure> registry = player.level().registryAccess().lookup(Registries.STRUCTURE).orElseThrow();
         return registry.containsKey(structureId);
     }
 }

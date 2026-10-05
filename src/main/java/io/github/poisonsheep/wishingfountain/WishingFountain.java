@@ -6,7 +6,7 @@ import io.github.poisonsheep.wishingfountain.config.CommonConfigs;
 import io.github.poisonsheep.wishingfountain.event.ForgeEvent;
 import io.github.poisonsheep.wishingfountain.loot.ModGlobalLootModifiers;
 import io.github.poisonsheep.wishingfountain.registry.*;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.neoforged.neoforge.common.NeoForge;
 import net.neoforged.neoforge.event.RegisterCommandsEvent;
 import net.neoforged.neoforge.event.server.ServerStartingEvent;
@@ -36,8 +36,8 @@ public class WishingFountain {
         ModGlobalLootModifiers.GLM.register(modBus);
     }
 
-    public static ResourceLocation id(String path) {
-        return ResourceLocation.fromNamespaceAndPath(MODID, path);
+    public static Identifier id(String path) {
+        return Identifier.fromNamespaceAndPath(MODID, path);
     }
 
     private void setup(final FMLCommonSetupEvent event) {

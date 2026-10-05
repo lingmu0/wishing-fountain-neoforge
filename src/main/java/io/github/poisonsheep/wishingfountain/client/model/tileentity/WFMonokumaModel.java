@@ -3,18 +3,17 @@ package io.github.poisonsheep.wishingfountain.client.model.tileentity;// Made wi
 // Paste this class into your mod and generate all required imports
 
 
-import com.mojang.blaze3d.vertex.PoseStack;
-import com.mojang.blaze3d.vertex.VertexConsumer;
 import io.github.poisonsheep.wishingfountain.WishingFountain;
-import net.minecraft.client.model.EntityModel;
+import net.minecraft.client.model.Model;
 import net.minecraft.client.model.geom.ModelLayerLocation;
 import net.minecraft.client.model.geom.ModelPart;
 import net.minecraft.client.model.geom.PartPose;
 import net.minecraft.client.model.geom.builders.*;
-import net.minecraft.resources.ResourceLocation;
-import net.minecraft.world.entity.Entity;
+import net.minecraft.resources.Identifier;
+import net.minecraft.client.renderer.rendertype.RenderTypes;
+import net.minecraft.util.Unit;
 
-public class WFMonokumaModel extends EntityModel<Entity> {
+public class WFMonokumaModel extends Model<Unit> {
 	// This layer location should be baked with EntityRendererProvider.Context in the entity renderer and passed into this model's constructor
 	public static final ModelLayerLocation LAYER_LOCATION = new ModelLayerLocation(WishingFountain.id("main"), "wishing_fountain_monokuma_model");
 	private final ModelPart bone;
@@ -39,6 +38,7 @@ public class WFMonokumaModel extends EntityModel<Entity> {
 	private final ModelPart bone20;
 
 	public WFMonokumaModel(ModelPart root) {
+		 super(root, RenderTypes::entityTranslucent);
 		this.bone = root.getChild("bone");
 		this.bone9 = root.getChild("bone9");
 		this.bone2 = root.getChild("bone2");
@@ -317,34 +317,5 @@ public class WFMonokumaModel extends EntityModel<Entity> {
 		PartDefinition cube_r22 = bone20.addOrReplaceChild("cube_r22", CubeListBuilder.create().texOffs(218, 233).addBox(-5.4659F, -8.2412F, -3.5F, 9.0F, 13.0F, 9.0F, new CubeDeformation(0.0F)), PartPose.offsetAndRotation(-10.5F, 46.5F, -7.9F, -0.1745F, 0.0F, 0.2618F));
 
 		return LayerDefinition.create(meshdefinition, 512, 512);
-	}
-
-	@Override
-	public void setupAnim(Entity entity, float limbSwing, float limbSwingAmount, float ageInTicks, float netHeadYaw, float headPitch) {
-
-	}
-
-	@Override
-	public void renderToBuffer(PoseStack poseStack, VertexConsumer vertexConsumer, int packedLight, int packedOverlay, int color) {
-		bone.render(poseStack, vertexConsumer, packedLight, packedOverlay, color);
-		bone9.render(poseStack, vertexConsumer, packedLight, packedOverlay, color);
-		bone2.render(poseStack, vertexConsumer, packedLight, packedOverlay, color);
-		bone3.render(poseStack, vertexConsumer, packedLight, packedOverlay, color);
-		bone5.render(poseStack, vertexConsumer, packedLight, packedOverlay, color);
-		bone4.render(poseStack, vertexConsumer, packedLight, packedOverlay, color);
-		bone6.render(poseStack, vertexConsumer, packedLight, packedOverlay, color);
-		bone7.render(poseStack, vertexConsumer, packedLight, packedOverlay, color);
-		bone8.render(poseStack, vertexConsumer, packedLight, packedOverlay, color);
-		bone10.render(poseStack, vertexConsumer, packedLight, packedOverlay, color);
-		bone11.render(poseStack, vertexConsumer, packedLight, packedOverlay, color);
-		bone12.render(poseStack, vertexConsumer, packedLight, packedOverlay, color);
-		bone13.render(poseStack, vertexConsumer, packedLight, packedOverlay, color);
-		bone14.render(poseStack, vertexConsumer, packedLight, packedOverlay, color);
-		bone15.render(poseStack, vertexConsumer, packedLight, packedOverlay, color);
-		bone16.render(poseStack, vertexConsumer, packedLight, packedOverlay, color);
-		bone17.render(poseStack, vertexConsumer, packedLight, packedOverlay, color);
-		bone18.render(poseStack, vertexConsumer, packedLight, packedOverlay, color);
-		bone19.render(poseStack, vertexConsumer, packedLight, packedOverlay, color);
-		bone20.render(poseStack, vertexConsumer, packedLight, packedOverlay, color);
 	}
 }

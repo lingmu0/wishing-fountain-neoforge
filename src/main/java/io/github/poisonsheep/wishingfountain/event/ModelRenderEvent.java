@@ -6,7 +6,6 @@ import io.github.poisonsheep.wishingfountain.client.model.tileentity.WFMonokumaM
 import io.github.poisonsheep.wishingfountain.client.model.tileentity.WFNepModel;
 import io.github.poisonsheep.wishingfountain.client.render.tileentity.WFRender;
 import io.github.poisonsheep.wishingfountain.tileentity.WFEntity;
-import net.minecraft.client.renderer.blockentity.BlockEntityRenderers;
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.neoforge.client.event.EntityRenderersEvent;
 import net.neoforged.bus.api.SubscribeEvent;
@@ -17,7 +16,7 @@ public class ModelRenderEvent {
 
     @SubscribeEvent
     public static void onEntityRenderers(EntityRenderersEvent.RegisterRenderers event) {
-        BlockEntityRenderers.register(WFEntity.TYPE, WFRender::new);
+        event.registerBlockEntityRenderer(WFEntity.TYPE, WFRender::new);
     }
 
     @SubscribeEvent

@@ -8,7 +8,7 @@ import io.github.poisonsheep.wishingfountain.util.PosListData;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.particles.ParticleTypes;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.level.Level;
@@ -23,8 +23,8 @@ import java.util.List;
 
 public class WFMultiBlock implements IMultiBlock {
 
-    private static final ResourceLocation WISHING_FOUNTAIN_TARGET = ResourceLocation.parse(WishingFountain.MODID + ":wishing_fountain_target");
-    private static final ResourceLocation WISHING_FOUNTAIN_STRUCTURE = ResourceLocation.parse(WishingFountain.MODID + ":wishing_fountain_structure");
+    private static final Identifier WISHING_FOUNTAIN_TARGET = Identifier.parse(WishingFountain.MODID + ":wishing_fountain_target");
+    private static final Identifier WISHING_FOUNTAIN_STRUCTURE = Identifier.parse(WishingFountain.MODID + ":wishing_fountain_structure");
 
     //喷泉中心相对于初始位置的坐标
     private static final BlockPos CENTER = new BlockPos(2, 2 ,2);
@@ -101,7 +101,7 @@ public class WFMultiBlock implements IMultiBlock {
         return getWishingFountainTemplate(world, WISHING_FOUNTAIN_TARGET);
     }
 
-    private StructureTemplate getWishingFountainTemplate(ServerLevel world, ResourceLocation location) {
+    private StructureTemplate getWishingFountainTemplate(ServerLevel world, Identifier location) {
         return world.getStructureManager().getOrCreate(location);
     }
 

@@ -1,5 +1,3 @@
-modLoader="javafml"
-loaderVersion="${loader_version_range}"
 license="${mod_license}"
 issueTrackerURL="https://github.com/poisonsheep/Wishing-Fountain/issues"
 
@@ -14,7 +12,7 @@ logoFile="goddess.png"
 [[dependencies.wishing_fountain]]
 modId="neoforge"
 type="required"
-versionRange="${neo_version_range}"
+versionRange="[${neo_version},)"
 ordering="NONE"
 side="BOTH"
 
@@ -28,7 +26,7 @@ side="BOTH"
 [[dependencies.wishing_fountain]]
 modId="jei"
 type="optional"
-versionRange="[19,)"
+versionRange="[29,)"
 ordering="AFTER"
 side="CLIENT"
 

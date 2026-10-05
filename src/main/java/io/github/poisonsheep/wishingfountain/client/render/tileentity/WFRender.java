@@ -1,104 +1,110 @@
 package io.github.poisonsheep.wishingfountain.client.render.tileentity;
 
 import com.mojang.blaze3d.vertex.PoseStack;
-import com.mojang.blaze3d.vertex.VertexConsumer;
 import com.mojang.math.Axis;
 import io.github.poisonsheep.wishingfountain.WishingFountain;
 import io.github.poisonsheep.wishingfountain.client.model.tileentity.WFDefaultModel;
 import io.github.poisonsheep.wishingfountain.client.model.tileentity.WFMonokumaModel;
 import io.github.poisonsheep.wishingfountain.client.model.tileentity.WFNepModel;
 import io.github.poisonsheep.wishingfountain.tileentity.WFEntity;
-import net.minecraft.client.Minecraft;
-import net.minecraft.client.renderer.MultiBufferSource;
-import net.minecraft.client.renderer.RenderType;
+import net.minecraft.client.renderer.SubmitNodeCollector;
 import net.minecraft.client.renderer.blockentity.BlockEntityRenderer;
 import net.minecraft.client.renderer.blockentity.BlockEntityRendererProvider;
-import net.minecraft.client.renderer.entity.ItemRenderer;
-import net.minecraft.client.resources.model.BakedModel;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.client.renderer.feature.ModelFeatureRenderer;
+import net.minecraft.client.renderer.item.ItemModelResolver;
+import net.minecraft.client.renderer.state.level.CameraRenderState;
+import net.minecraft.client.renderer.texture.OverlayTexture;
+import net.minecraft.core.Direction;
+import net.minecraft.resources.Identifier;
 import net.minecraft.util.RandomSource;
+import net.minecraft.util.Unit;
 import net.minecraft.world.item.ItemDisplayContext;
 import net.minecraft.world.item.ItemStack;
-import org.jetbrains.annotations.NotNull;
+import net.minecraft.world.phys.Vec3;
+import org.jspecify.annotations.Nullable;
 
-public class WFRender implements BlockEntityRenderer<WFEntity> {
+public class WFRender implements BlockEntityRenderer<WFEntity, WFRenderState> {
 
-    private final ItemRenderer itemRenderer;
+    private final WFDefaultModel defaultModel;
+    private final WFMonokumaModel monokumaModel;
+    private final WFNepModel nepModel;
+    private final ItemModelResolver itemModelResolver;
 
-    private final WFDefaultModel DEFAULT_MODEL;
+    private static final Identifier DEFAULT_TEXTURE = WishingFountain.id("textures/entity/default_wishing_fountain.png");
+    private static final Identifier MONOKUMA_TEXTURE = WishingFountain.id("textures/entity/monokuma_wishing_fountain.png");
+    private static final Identifier NEP_TEXTURE = WishingFountain.id("textures/entity/nep_wishing_fountain.png");
 
-    private final WFMonokumaModel MONOKUMA_MODEL;
-
-    private final WFNepModel NEP_MODEL;
-
-    private static final ResourceLocation DEFAULT_TEXTURE = WishingFountain.id("textures/entity/default_wishing_fountain.png");
-
-    private static final ResourceLocation MONOKUMA_TEXTURE = WishingFountain.id("textures/entity/monokuma_wishing_fountain.png");
-
-    private static final ResourceLocation NEP_TEXTURE = WishingFountain.id("textures/entity/nep_wishing_fountain.png");
-
-    public WFRender(BlockEntityRendererProvider.Context render) {
-        DEFAULT_MODEL = new WFDefaultModel(render.bakeLayer(WFDefaultModel.LAYER_LOCATION));
-        MONOKUMA_MODEL = new WFMonokumaModel(render.bakeLayer(WFMonokumaModel.LAYER_LOCATION));
-        NEP_MODEL = new WFNepModel(render.bakeLayer(WFNepModel.LAYER_LOCATION));
-        Minecraft minecraft = Minecraft.getInstance();
-        itemRenderer = minecraft.getItemRenderer();
+    public WFRender(BlockEntityRendererProvider.Context context) {
+        this.defaultModel = new WFDefaultModel(context.bakeLayer(WFDefaultModel.LAYER_LOCATION));
+        this.monokumaModel = new WFMonokumaModel(context.bakeLayer(WFMonokumaModel.LAYER_LOCATION));
+        this.nepModel = new WFNepModel(context.bakeLayer(WFNepModel.LAYER_LOCATION));
+        this.itemModelResolver = context.itemModelResolver();
     }
+
     @Override
-    public void render(WFEntity entity, float partialTicks, PoseStack poseStack, MultiBufferSource source, int combinedLightIn, int combinedOverlayIn) {
-        if(entity.isRender()) {
+    public WFRenderState createRenderState() {
+        return new WFRenderState();
+    }
+
+    @Override
+    public void extractRenderState(WFEntity entity, WFRenderState state, float partialTicks, Vec3 cameraPosition,
+                                  ModelFeatureRenderer.@Nullable CrumblingOverlay breakProgress) {
+        BlockEntityRenderer.super.extractRenderState(entity, state, partialTicks, cameraPosition, breakProgress);
+        state.renderFountain = entity.isRender();
+        state.textureIndex = entity.getTextureIndex();
+        state.direction = entity.getDirection();
+        ItemStack stack = entity.handler.getStackInSlot(0);
+        state.itemCount = stack.getCount();
+        this.itemModelResolver.updateForTopItem(state.item, stack, ItemDisplayContext.FIXED, entity.getLevel(), null, 0);
+    }
+
+    @Override
+    public void submit(WFRenderState state, PoseStack poseStack, SubmitNodeCollector collector, CameraRenderState camera) {
+        if (state.renderFountain) {
             poseStack.pushPose();
-            this.setTranslateAndPose(entity, poseStack);
+            setTranslateAndPose(state.direction, poseStack);
             poseStack.mulPose(Axis.ZN.rotationDegrees(180));
-            if(entity.getTextureIndex() == 1) {
-                VertexConsumer buffer = source.getBuffer(RenderType.entityTranslucent(MONOKUMA_TEXTURE));
-                MONOKUMA_MODEL.renderToBuffer(poseStack, buffer, combinedLightIn, combinedOverlayIn, -1);
-            } else if(entity.getTextureIndex() == 2) {
-                VertexConsumer buffer = source.getBuffer(RenderType.entityTranslucent(NEP_TEXTURE));
-                NEP_MODEL.renderToBuffer(poseStack, buffer, combinedLightIn, combinedOverlayIn, -1);
+            if (state.textureIndex == 1) {
+                collector.submitModel(monokumaModel, Unit.INSTANCE, poseStack, monokumaModel.renderType(MONOKUMA_TEXTURE),
+                        state.lightCoords, OverlayTexture.NO_OVERLAY, -1, state.breakProgress);
+            } else if (state.textureIndex == 2) {
+                collector.submitModel(nepModel, Unit.INSTANCE, poseStack, nepModel.renderType(NEP_TEXTURE),
+                        state.lightCoords, OverlayTexture.NO_OVERLAY, -1, state.breakProgress);
             } else {
-                VertexConsumer buffer = source.getBuffer(RenderType.entityTranslucent(DEFAULT_TEXTURE));
-                DEFAULT_MODEL.renderToBuffer(poseStack, buffer, combinedLightIn, combinedOverlayIn, -1);
+                collector.submitModel(defaultModel, Unit.INSTANCE, poseStack, defaultModel.renderType(DEFAULT_TEXTURE),
+                        state.lightCoords, OverlayTexture.NO_OVERLAY, -1, state.breakProgress);
             }
             poseStack.popPose();
         }
-        if (!entity.handler.getStackInSlot(0).isEmpty()) {
-            ItemStack stack = entity.handler.getStackInSlot(0);
-            long r = entity.getBlockPos().asLong();
-            RandomSource rand = RandomSource.create(r);
+
+        if (state.itemCount > 0) {
+            RandomSource random = RandomSource.create(state.blockPos.asLong());
             poseStack.pushPose();
             poseStack.translate(0.5, 0.5, 0.5);
             poseStack.mulPose(Axis.XN.rotationDegrees(90));
             float scale = 8f / 14f;
             poseStack.scale(scale, scale, scale);
-            for (int i = 0; i < stack.getCount(); i++) {
-                poseStack.mulPose(Axis.ZP.rotationDegrees(rand.nextInt(360)));
+            for (int i = 0; i < state.itemCount; i++) {
+                poseStack.mulPose(Axis.ZP.rotationDegrees(random.nextInt(360)));
                 poseStack.translate(0, 0, 0.5 / (16f * scale));
-                BakedModel model = itemRenderer.getModel(stack, null, null, 0);
-                itemRenderer.render(stack, ItemDisplayContext.FIXED, true, poseStack, source, combinedLightIn,
-                        combinedOverlayIn, model);
+                state.item.submit(poseStack, collector, state.lightCoords, OverlayTexture.NO_OVERLAY, 0);
             }
             poseStack.popPose();
         }
     }
 
     @Override
-    public boolean shouldRenderOffScreen(@NotNull WFEntity entity) {
+    public boolean shouldRenderOffScreen() {
         return true;
     }
 
-    private void setTranslateAndPose(WFEntity entity, PoseStack stack) {
+    private void setTranslateAndPose(Direction direction, PoseStack stack) {
         stack.translate(0.5, -0.5, 0.5);
-        switch (entity.getDirection()) {
-            case SOUTH:
-                stack.mulPose(Axis.YP.rotationDegrees(90));
-                break;
-            case EAST:
-                stack.mulPose(Axis.YP.rotationDegrees(180));
-                break;
-            case NORTH:
-                stack.mulPose(Axis.YP.rotationDegrees(270));
-                break;
+        switch (direction) {
+            case SOUTH -> stack.mulPose(Axis.YP.rotationDegrees(90));
+            case EAST -> stack.mulPose(Axis.YP.rotationDegrees(180));
+            case NORTH -> stack.mulPose(Axis.YP.rotationDegrees(270));
+            default -> { }
         }
     }
 }

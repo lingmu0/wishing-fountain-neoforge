@@ -9,14 +9,13 @@ import net.minecraft.core.Holder;
 import net.minecraft.core.QuartPos;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.ResourceKey;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.server.level.ServerChunkCache;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.util.Mth;
 import net.minecraft.world.InteractionResult;
-import net.minecraft.world.InteractionResultHolder;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.biome.Biome;
@@ -37,7 +36,7 @@ import java.util.function.Consumer;
 public class WFBiomeMapItem extends WFMapItem {
     private static final Logger LOGGER = LoggerFactory.getLogger("WFBiomeMapItem");
 
-    private final ResourceLocation target_biome = Biomes.MUSHROOM_FIELDS.location();
+    private final Identifier target_biome = Biomes.MUSHROOM_FIELDS.identifier();
 
     public WFBiomeMapItem() {
         super();
@@ -45,17 +44,17 @@ public class WFBiomeMapItem extends WFMapItem {
     }
 
     @Override
-    protected ResourceLocation getDefaultTarget() {
+    protected Identifier getDefaultTarget() {
             return target_biome;
     }
 
     @Override
     protected ItemStack search(ItemStack stack, ServerLevel worldIn, Player player, int slot) {
-        ResourceLocation target = getTarget(stack);
+        Identifier target = getTarget(stack);
         if(target == null) {
             return ItemStack.EMPTY;
         }
-        InteractionResultHolder<BlockPos> result = searchConcurrent(target, worldIn, stack, player);
+        MapSearchResult result = searchConcurrent(target, worldIn, stack, player);
         if(result.getResult() == InteractionResult.FAIL) {
             worldIn.playSound(null, player.getX(), player.getY(), player.getZ(), SoundEvents.GLASS_BREAK, SoundSource.PLAYERS, 1F, 1F);
             return ItemStack.EMPTY;
@@ -70,18 +69,18 @@ public class WFBiomeMapItem extends WFMapItem {
     }
 
     //并发搜索模式
-    protected InteractionResultHolder<BlockPos> searchConcurrent(ResourceLocation targetBiome, ServerLevel worldIn, ItemStack stack, Player player) {
+    protected MapSearchResult searchConcurrent(Identifier targetBiome, ServerLevel worldIn, ItemStack stack, Player player) {
         var tag = ItemStackData.get(stack);
-        int centerX = (int) tag.getDouble(SOURCE_X);
-        int centerZ = (int) tag.getDouble(SOURCE_Z);
+        int centerX = tag.getIntOr(SOURCE_X, 0);
+        int centerZ = tag.getIntOr(SOURCE_Z, 0);
         BlockPos centerPos = new BlockPos(centerX, 64, centerZ);
         Key key = new Key(GlobalPos.of(worldIn.dimension(), centerPos), targetBiome);
         if(COMPUTING.contains(key)) {
-            return InteractionResultHolder.pass(BlockPos.ZERO);
+            return MapSearchResult.pass(BlockPos.ZERO);
         } else if(RESULTS.containsKey(key)) {
             var ret = RESULTS.get(key);
             if(ret.getResult() == InteractionResult.PASS) {
-                return InteractionResultHolder.fail(BlockPos.ZERO);
+                return MapSearchResult.fail(BlockPos.ZERO);
             }
             return ret;
         } else {
@@ -91,20 +90,20 @@ public class WFBiomeMapItem extends WFMapItem {
                 RESULTS.put(key, searchIterative(targetBiome, dummy, worldIn, player));
                 COMPUTING.remove(key);
             });
-            return InteractionResultHolder.pass(BlockPos.ZERO);
+            return MapSearchResult.pass(BlockPos.ZERO);
         }
     }
 
-    protected InteractionResultHolder<BlockPos> searchIterative(ResourceLocation targetBiome, ItemStack stack, ServerLevel worldIn, Player player) {
+    protected MapSearchResult searchIterative(Identifier targetBiome, ItemStack stack, ServerLevel worldIn, Player player) {
         BlockPos startPos = new BlockPos(
-                ItemStackData.get(stack).getInt(SOURCE_X),
+                ItemStackData.get(stack).getIntOr(SOURCE_X, 0),
                 player.getBlockY(),
-                ItemStackData.get(stack).getInt(SOURCE_Z)
+                ItemStackData.get(stack).getIntOr(SOURCE_Z, 0)
         );
         return searchBiome(worldIn, startPos, targetBiome);
     }
 
-    private BlockPos calculateBiomeCenter(ServerLevel worldIn, BlockPos biomeCorner, ResourceLocation biome) {
+    private BlockPos calculateBiomeCenter(ServerLevel worldIn, BlockPos biomeCorner, Identifier biome) {
         ServerChunkCache cache = worldIn.getChunkSource();
         BiomeSource source = cache.getGenerator().getBiomeSource();
         Climate.Sampler sampler = cache.randomState().sampler();
@@ -141,7 +140,7 @@ public class WFBiomeMapItem extends WFMapItem {
         return source.getNoiseBiome(pos.getX() >> 2, pos.getY() >> 2, pos.getZ() >> 2, sampler);
     }
 
-    public static InteractionResultHolder<BlockPos> searchBiome(ServerLevel worldIn, BlockPos startPos, ResourceLocation targetBiome) {
+    public static MapSearchResult searchBiome(ServerLevel worldIn, BlockPos startPos, Identifier targetBiome) {
         int sourceX = startPos.getX();
         int sourceZ = startPos.getZ();
         int y = startPos.getY();
@@ -153,7 +152,7 @@ public class WFBiomeMapItem extends WFMapItem {
 
         BlockPos hit = checkBiomeAt(sourceX, sourceZ, y, worldIn, targetKey);
         if (hit != null) {
-            return InteractionResultHolder.success(hit);
+            return MapSearchResult.success(hit);
         }
 
         int x = 0, z = 0, leg = 0, legIndex = 0;
@@ -167,7 +166,7 @@ public class WFBiomeMapItem extends WFMapItem {
 
             if (legIndex >= legSize) {
                 if (leg > maxLegs)
-                    return InteractionResultHolder.fail(BlockPos.ZERO);
+                    return MapSearchResult.fail(BlockPos.ZERO);
                 leg++;
                 legIndex = 0;
             }
@@ -178,14 +177,14 @@ public class WFBiomeMapItem extends WFMapItem {
 
             hit = checkBiomeAt(testX, testZ, y, worldIn, targetKey);
             if (hit != null) {
-                return InteractionResultHolder.success(hit);
+                return MapSearchResult.success(hit);
             }
         }
-        return InteractionResultHolder.fail(BlockPos.ZERO);
+        return MapSearchResult.fail(BlockPos.ZERO);
     }
 
     private static BlockPos checkBiomeAt(int testX, int testZ, int playerY, ServerLevel worldIn, ResourceKey<Biome> targetKey) {
-        int[] searchedHeights = Mth.outFromOrigin(playerY, worldIn.getMinBuildHeight() + 1, worldIn.getMaxBuildHeight(), 64).toArray();
+        int[] searchedHeights = Mth.outFromOrigin(playerY, worldIn.getMinY() + 1, worldIn.getMaxY(), 64).toArray();
         int quartX = QuartPos.fromBlock(testX);
         int quartZ = QuartPos.fromBlock(testZ);
         ServerChunkCache cache = worldIn.getChunkSource();
@@ -202,13 +201,13 @@ public class WFBiomeMapItem extends WFMapItem {
         return null;
     }
     
-    public static void searchBiomeAsync(ServerLevel worldIn, BlockPos startPos, ResourceLocation targetBiome, Consumer<InteractionResultHolder<BlockPos>> callback) {
+    public static void searchBiomeAsync(ServerLevel worldIn, BlockPos startPos, Identifier targetBiome, Consumer<MapSearchResult> callback) {
         EXECUTORS.submit(() -> {
             try {
-                InteractionResultHolder<BlockPos> result = searchBiome(worldIn, startPos, targetBiome);
+                MapSearchResult result = searchBiome(worldIn, startPos, targetBiome);
                 callback.accept(result);
             } catch (Exception e) {
-                callback.accept(InteractionResultHolder.fail(BlockPos.ZERO));
+                callback.accept(MapSearchResult.fail(BlockPos.ZERO));
             }
         });
     }
@@ -217,9 +216,9 @@ public class WFBiomeMapItem extends WFMapItem {
         ItemStackData.update(itemStack, tag -> tag.putString(TARGET, target));
     }
 
-    private record Key(GlobalPos pos, ResourceLocation target) {}
+    private record Key(GlobalPos pos, Identifier target) {}
 
-    private static final Map<Key, InteractionResultHolder<BlockPos>> RESULTS = new ConcurrentHashMap<>();
+    private static final Map<Key, MapSearchResult> RESULTS = new ConcurrentHashMap<>();
     private static final Set<Key> COMPUTING = ConcurrentHashMap.newKeySet();
     protected static final ExecutorService EXECUTORS = Executors.newFixedThreadPool(2);
 }

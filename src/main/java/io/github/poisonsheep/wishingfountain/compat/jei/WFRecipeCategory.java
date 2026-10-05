@@ -6,12 +6,14 @@ import mezz.jei.api.gui.drawable.IDrawable;
 import mezz.jei.api.gui.drawable.IDrawableStatic;
 import mezz.jei.api.helpers.IGuiHelper;
 import mezz.jei.api.recipe.IFocusGroup;
+import mezz.jei.api.gui.ingredient.IRecipeSlotsView;
 import mezz.jei.api.recipe.RecipeIngredientRole;
 import mezz.jei.api.recipe.RecipeType;
 import mezz.jei.api.recipe.category.IRecipeCategory;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.item.ItemStack;
 
 import java.util.Collections;
@@ -20,8 +22,8 @@ import java.util.List;
 public class WFRecipeCategory implements IRecipeCategory<WFRecipeWrapper> {
     public static final RecipeType<WFRecipeWrapper> WISHING_FOUNTAIN = RecipeType.create(WishingFountain.MODID, "wishing_fountain", WFRecipeWrapper.class);
     private static final MutableComponent TITLE = Component.translatable("jei.wishing_fountain.wf_recipe.title");
-    private static final ResourceLocation WF_ICON = WishingFountain.id("textures/gui/wishing_fountain_icon.png");
-    protected static final ResourceLocation BACKGROUND = WishingFountain.id("textures/gui/sea.png");
+    private static final Identifier WF_ICON = WishingFountain.id("textures/gui/wishing_fountain_icon.png");
+    protected static final Identifier BACKGROUND = WishingFountain.id("textures/gui/sea.png");
     private final IDrawableStatic bgDraw;
     private final IDrawableStatic wfDraw;
 
@@ -55,8 +57,18 @@ public class WFRecipeCategory implements IRecipeCategory<WFRecipeWrapper> {
     }
 
     @Override
-    public IDrawable getBackground() {
-        return bgDraw;
+    public int getWidth() {
+        return 160;
+    }
+
+    @Override
+    public int getHeight() {
+        return 125;
+    }
+
+    @Override
+    public void draw(WFRecipeWrapper recipe, IRecipeSlotsView slots, GuiGraphicsExtractor graphics, double mouseX, double mouseY) {
+        bgDraw.draw(graphics, 0, 0);
     }
 
     @Override
