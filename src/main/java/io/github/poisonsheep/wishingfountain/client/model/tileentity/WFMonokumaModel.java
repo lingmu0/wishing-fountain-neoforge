@@ -38,7 +38,7 @@ public class WFMonokumaModel extends Model<Unit> {
 	private final ModelPart bone20;
 
 	public WFMonokumaModel(ModelPart root) {
-		 super(root, RenderTypes::entityTranslucent);
+		 super(root, RenderTypes::entityCutout);
 		this.bone = root.getChild("bone");
 		this.bone9 = root.getChild("bone9");
 		this.bone2 = root.getChild("bone2");

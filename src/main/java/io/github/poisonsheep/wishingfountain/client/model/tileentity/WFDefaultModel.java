@@ -36,7 +36,7 @@ public class WFDefaultModel extends Model<Unit> {
 	private final ModelPart bone18;
 
 	public WFDefaultModel(ModelPart root) {
-		 super(root, RenderTypes::entityTranslucent);
+		 super(root, RenderTypes::entityCutout);
 		this.bone = root.getChild("bone");
 		this.bone9 = root.getChild("bone9");
 		this.bone2 = root.getChild("bone2");

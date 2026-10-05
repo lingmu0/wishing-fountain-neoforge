@@ -42,7 +42,7 @@ public class WFNepModel extends Model<Unit> {
 	private final ModelPart bone24;
 
 	public WFNepModel(ModelPart root) {
-		 super(root, RenderTypes::entityTranslucent);
+		 super(root, RenderTypes::entityCutout);
 		this.bone = root.getChild("bone");
 		this.bone9 = root.getChild("bone9");
 		this.bone2 = root.getChild("bone2");
