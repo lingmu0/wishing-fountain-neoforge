@@ -16,7 +16,7 @@ import net.minecraft.world.entity.Entity;
 
 public class WFDefaultModel extends EntityModel<Entity> {
 	// This layer location should be baked with EntityRendererProvider.Context in the entity renderer and passed into this model's constructor
-	public static final ModelLayerLocation LAYER_LOCATION = new ModelLayerLocation(new ResourceLocation(WishingFountain.MODID, "main"), "wishing_fountain_default_model");
+	public static final ModelLayerLocation LAYER_LOCATION = new ModelLayerLocation(WishingFountain.id("main"), "wishing_fountain_default_model");
 	private final ModelPart bone;
 	private final ModelPart bone9;
 	private final ModelPart bone2;
@@ -361,24 +361,24 @@ public class WFDefaultModel extends EntityModel<Entity> {
 	}
 
 	@Override
-	public void renderToBuffer(PoseStack poseStack, VertexConsumer vertexConsumer, int packedLight, int packedOverlay, float red, float green, float blue, float alpha) {
-		bone.render(poseStack, vertexConsumer, packedLight, packedOverlay, red, green, blue, alpha);
-		bone9.render(poseStack, vertexConsumer, packedLight, packedOverlay, red, green, blue, alpha);
-		bone2.render(poseStack, vertexConsumer, packedLight, packedOverlay, red, green, blue, alpha);
-		bone3.render(poseStack, vertexConsumer, packedLight, packedOverlay, red, green, blue, alpha);
-		bone5.render(poseStack, vertexConsumer, packedLight, packedOverlay, red, green, blue, alpha);
-		bone4.render(poseStack, vertexConsumer, packedLight, packedOverlay, red, green, blue, alpha);
-		bone6.render(poseStack, vertexConsumer, packedLight, packedOverlay, red, green, blue, alpha);
-		bone7.render(poseStack, vertexConsumer, packedLight, packedOverlay, red, green, blue, alpha);
-		bone8.render(poseStack, vertexConsumer, packedLight, packedOverlay, red, green, blue, alpha);
-		bone10.render(poseStack, vertexConsumer, packedLight, packedOverlay, red, green, blue, alpha);
-		bone11.render(poseStack, vertexConsumer, packedLight, packedOverlay, red, green, blue, alpha);
-		bone12.render(poseStack, vertexConsumer, packedLight, packedOverlay, red, green, blue, alpha);
-		bone13.render(poseStack, vertexConsumer, packedLight, packedOverlay, red, green, blue, alpha);
-		bone14.render(poseStack, vertexConsumer, packedLight, packedOverlay, red, green, blue, alpha);
-		bone15.render(poseStack, vertexConsumer, packedLight, packedOverlay, red, green, blue, alpha);
-		bone16.render(poseStack, vertexConsumer, packedLight, packedOverlay, red, green, blue, alpha);
-		bone17.render(poseStack, vertexConsumer, packedLight, packedOverlay, red, green, blue, alpha);
-		bone18.render(poseStack, vertexConsumer, packedLight, packedOverlay, red, green, blue, alpha);
+	public void renderToBuffer(PoseStack poseStack, VertexConsumer vertexConsumer, int packedLight, int packedOverlay, int color) {
+		bone.render(poseStack, vertexConsumer, packedLight, packedOverlay, color);
+		bone9.render(poseStack, vertexConsumer, packedLight, packedOverlay, color);
+		bone2.render(poseStack, vertexConsumer, packedLight, packedOverlay, color);
+		bone3.render(poseStack, vertexConsumer, packedLight, packedOverlay, color);
+		bone5.render(poseStack, vertexConsumer, packedLight, packedOverlay, color);
+		bone4.render(poseStack, vertexConsumer, packedLight, packedOverlay, color);
+		bone6.render(poseStack, vertexConsumer, packedLight, packedOverlay, color);
+		bone7.render(poseStack, vertexConsumer, packedLight, packedOverlay, color);
+		bone8.render(poseStack, vertexConsumer, packedLight, packedOverlay, color);
+		bone10.render(poseStack, vertexConsumer, packedLight, packedOverlay, color);
+		bone11.render(poseStack, vertexConsumer, packedLight, packedOverlay, color);
+		bone12.render(poseStack, vertexConsumer, packedLight, packedOverlay, color);
+		bone13.render(poseStack, vertexConsumer, packedLight, packedOverlay, color);
+		bone14.render(poseStack, vertexConsumer, packedLight, packedOverlay, color);
+		bone15.render(poseStack, vertexConsumer, packedLight, packedOverlay, color);
+		bone16.render(poseStack, vertexConsumer, packedLight, packedOverlay, color);
+		bone17.render(poseStack, vertexConsumer, packedLight, packedOverlay, color);
+		bone18.render(poseStack, vertexConsumer, packedLight, packedOverlay, color);
 	}
 }

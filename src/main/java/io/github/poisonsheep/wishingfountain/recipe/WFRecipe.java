@@ -6,8 +6,9 @@ import io.github.poisonsheep.wishingfountain.item.WFStructureMap;
 import io.github.poisonsheep.wishingfountain.registry.ItemRegistry;
 import io.github.poisonsheep.wishingfountain.registry.RecipeRegistry;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.HolderLookup;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.core.NonNullList;
-import net.minecraft.core.RegistryAccess;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
@@ -21,20 +22,16 @@ import net.minecraft.world.item.crafting.Recipe;
 import net.minecraft.world.item.crafting.RecipeSerializer;
 import net.minecraft.world.item.crafting.RecipeType;
 import net.minecraft.world.level.Level;
-import net.minecraftforge.common.util.RecipeMatcher;
-import net.minecraftforge.registries.ForgeRegistries;
 
 import java.util.ArrayList;
 import java.util.List;
 
 public class WFRecipe implements Recipe<WFRecipeInventory> {
-    private final ResourceLocation id;
     private final String wishType;
     private final String target;
     private final NonNullList<Ingredient> ingredients;
 
-    public WFRecipe(ResourceLocation id, String wishType, String target, NonNullList<Ingredient> ingredients) {
-        this.id = id;
+    public WFRecipe(String wishType, String target, NonNullList<Ingredient> ingredients) {
         this.wishType = wishType;
         this.target = target;
         this.ingredients = ingredients;
@@ -78,23 +75,25 @@ public class WFRecipe implements Recipe<WFRecipeInventory> {
                 inputs.add(itemstack);
             }
         }
-        boolean var10000;
-        label43: {
-            if (i == this.ingredients.size()) {
-                if (RecipeMatcher.findMatches(inputs, this.ingredients) != null) {
-                    break label43;
-                }
+        return i == this.ingredients.size() && matchesIngredients(inputs, 0, new boolean[inputs.size()]);
+    }
+
+    private boolean matchesIngredients(List<ItemStack> inputs, int ingredientIndex, boolean[] used) {
+        if (ingredientIndex == ingredients.size()) return true;
+        Ingredient ingredient = ingredients.get(ingredientIndex);
+        for (int inputIndex = 0; inputIndex < inputs.size(); inputIndex++) {
+            if (!used[inputIndex] && ingredient.test(inputs.get(inputIndex))) {
+                used[inputIndex] = true;
+                if (matchesIngredients(inputs, ingredientIndex + 1, used)) return true;
+                used[inputIndex] = false;
             }
-            var10000 = false;
-            return var10000;
         }
-        var10000 = true;
-        return var10000;
+        return false;
     }
 
     @Override
-    public ItemStack assemble(WFRecipeInventory inv, RegistryAccess registryAccess) {
-        return getResultItem(registryAccess).copy();
+    public ItemStack assemble(WFRecipeInventory inv, HolderLookup.Provider registries) {
+        return getResultItem(registries).copy();
     }
 
     @Override
@@ -103,7 +102,7 @@ public class WFRecipe implements Recipe<WFRecipeInventory> {
     }
 
     @Override
-    public ItemStack getResultItem(RegistryAccess registryAccess) {
+    public ItemStack getResultItem(HolderLookup.Provider registries) {
         return extractItem();
     }
 
@@ -118,7 +117,7 @@ public class WFRecipe implements Recipe<WFRecipeInventory> {
         } else if(wishType.equals("item")) {
             ResourceLocation itemId = ResourceLocation.tryParse(target);
             if (itemId != null) {
-                Item item = ForgeRegistries.ITEMS.getValue(itemId);
+                Item item = BuiltInRegistries.ITEM.getOptional(itemId).orElse(null);
                 if (item != null) {
                     return new ItemStack(item);
                 }
@@ -134,18 +133,13 @@ public class WFRecipe implements Recipe<WFRecipeInventory> {
     }
 
     @Override
-    public ResourceLocation getId() {
-        return this.id;
-    }
-
-    @Override
     public RecipeSerializer<?> getSerializer() {
         return RecipeRegistry.WF_RECIPE_SERIALIZER.get();
     }
 
     @Override
     public RecipeType<?> getType() {
-        return RecipeRegistry.WF_RECIPE_TYPE;
+        return RecipeRegistry.WF_RECIPE_TYPE.get();
     }
 
     public String getMapType() {

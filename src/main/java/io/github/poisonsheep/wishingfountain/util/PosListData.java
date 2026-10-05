@@ -3,6 +3,7 @@ package io.github.poisonsheep.wishingfountain.util;
 import com.google.common.collect.Lists;
 import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.ListTag;
+import net.minecraft.nbt.NbtOps;
 import net.minecraft.nbt.NbtUtils;
 
 import java.util.List;
@@ -21,7 +22,7 @@ public final class PosListData {
     public void deserialize(ListTag nbt) {
         data.clear();
         for (int i = 0; i < nbt.size(); i++) {
-            data.add(NbtUtils.readBlockPos(nbt.getCompound(i)));
+            BlockPos.CODEC.parse(NbtOps.INSTANCE, nbt.get(i)).result().ifPresent(data::add);
         }
     }
 

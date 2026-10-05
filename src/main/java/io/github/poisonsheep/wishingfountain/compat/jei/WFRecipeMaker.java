@@ -8,6 +8,8 @@ import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.crafting.RecipeManager;
+import net.minecraft.world.item.crafting.RecipeHolder;
+import net.minecraft.core.HolderLookup;
 
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -28,11 +30,12 @@ public final class WFRecipeMaker {
     }
 
     public List<WFRecipeWrapper> getAltarRecipes() {
-        List<WFRecipe> wfRecipes = recipeManager.getAllRecipesFor(RecipeRegistry.WF_RECIPE_TYPE);
+        List<RecipeHolder<WFRecipe>> wfRecipes = recipeManager.getAllRecipesFor(RecipeRegistry.WF_RECIPE_TYPE.get());
         List<WFRecipeWrapper> recipes = Lists.newArrayList();
-        for (WFRecipe recipe : wfRecipes) {
-            ResourceLocation recipeId = recipe.getId();
-            ItemStack output = recipe.getResultItem(Minecraft.getInstance().level.registryAccess());
+        for (RecipeHolder<WFRecipe> holder : wfRecipes) {
+            WFRecipe recipe = holder.value();
+            ResourceLocation recipeId = holder.id();
+            ItemStack output = recipe.getResultItem((HolderLookup.Provider) Minecraft.getInstance().level.registryAccess());
             String namespace = recipeId.getNamespace().toLowerCase(Locale.US);
             String langKey;
             Path path = Paths.get(recipeId.getPath().toLowerCase(Locale.US));

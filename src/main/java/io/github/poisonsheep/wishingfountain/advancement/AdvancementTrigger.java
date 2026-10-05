@@ -1,12 +1,14 @@
 package io.github.poisonsheep.wishingfountain.advancement;
 
-import com.google.gson.JsonObject;
-import net.minecraft.advancements.critereon.AbstractCriterionTriggerInstance;
+import com.mojang.serialization.Codec;
+import com.mojang.serialization.codecs.RecordCodecBuilder;
+import net.minecraft.advancements.critereon.SimpleCriterionTrigger.SimpleInstance;
 import net.minecraft.advancements.critereon.ContextAwarePredicate;
-import net.minecraft.advancements.critereon.DeserializationContext;
 import net.minecraft.advancements.critereon.SimpleCriterionTrigger;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerPlayer;
+
+import java.util.Optional;
 
 public class AdvancementTrigger extends SimpleCriterionTrigger<AdvancementTrigger.TriggerInstance> {
     public final ResourceLocation ID;
@@ -19,20 +21,20 @@ public class AdvancementTrigger extends SimpleCriterionTrigger<AdvancementTrigge
         return ID;
     }
 
+    @Override
+    public Codec<TriggerInstance> codec() {
+        return TriggerInstance.CODEC;
+    }
+
     public void trigger(ServerPlayer player) {
         this.trigger(player, TriggerInstance::test);
     }
 
-    @Override
-    protected TriggerInstance createInstance(JsonObject json, ContextAwarePredicate player, DeserializationContext p_66250_) {
-        return new TriggerInstance(player, ID);
-    }
+    public record TriggerInstance(Optional<ContextAwarePredicate> player) implements SimpleInstance {
+        public static final Codec<TriggerInstance> CODEC = RecordCodecBuilder.create(instance -> instance.group(
+                ContextAwarePredicate.CODEC.optionalFieldOf("player").forGetter(TriggerInstance::player)
+        ).apply(instance, TriggerInstance::new));
 
-    public static class TriggerInstance extends AbstractCriterionTriggerInstance
-    {
-        public TriggerInstance(ContextAwarePredicate player, ResourceLocation res) {
-            super(res, player);
-        }
         public boolean test() {
             return true;
         }

@@ -6,8 +6,9 @@ import net.minecraft.world.ContainerHelper;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.crafting.Ingredient;
+import net.minecraft.world.item.crafting.RecipeInput;
 
-public class WFRecipeInventory implements Container {
+public class WFRecipeInventory implements Container, RecipeInput {
 
     public static final int RECIPES_SIZE = 8;
     public final NonNullList<ItemStack> items = NonNullList.withSize(RECIPES_SIZE, ItemStack.EMPTY);
@@ -21,6 +22,11 @@ public class WFRecipeInventory implements Container {
 
     @Override
     public int getContainerSize() {
+        return RECIPES_SIZE;
+    }
+
+    @Override
+    public int size() {
         return RECIPES_SIZE;
     }
 

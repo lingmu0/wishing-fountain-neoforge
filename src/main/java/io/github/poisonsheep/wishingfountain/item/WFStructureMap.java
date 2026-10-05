@@ -1,6 +1,7 @@
 package io.github.poisonsheep.wishingfountain.item;
 
 import io.github.poisonsheep.wishingfountain.config.CommonConfigs;
+import io.github.poisonsheep.wishingfountain.util.ItemStackData;
 import net.minecraft.core.*;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.ResourceKey;
@@ -44,8 +45,9 @@ public class WFStructureMap extends WFMapItem{
         if(target == null) {
             return ItemStack.EMPTY;
         }
-        int centerX = (int) stack.getOrCreateTag().getDouble(SOURCE_X);
-        int centerZ = (int) stack.getOrCreateTag().getDouble(SOURCE_Z);
+        var tag = ItemStackData.get(stack);
+        int centerX = (int) tag.getDouble(SOURCE_X);
+        int centerZ = (int) tag.getDouble(SOURCE_Z);
         BlockPos centerPos = new BlockPos(centerX, 64, centerZ);
         SearchKey key = new SearchKey(GlobalPos.of(worldIn.dimension(), centerPos), target.toString());
 
@@ -122,7 +124,7 @@ public class WFStructureMap extends WFMapItem{
     }
 
     public static void setTarget(ItemStack itemStack, String target) {
-        itemStack.getOrCreateTag().putString(TARGET, target);
+        ItemStackData.update(itemStack, tag -> tag.putString(TARGET, target));
     }
 
     private record SearchKey(GlobalPos pos, String target) {}

@@ -7,12 +7,12 @@ import io.github.poisonsheep.wishingfountain.client.model.tileentity.WFNepModel;
 import io.github.poisonsheep.wishingfountain.client.render.tileentity.WFRender;
 import io.github.poisonsheep.wishingfountain.tileentity.WFEntity;
 import net.minecraft.client.renderer.blockentity.BlockEntityRenderers;
-import net.minecraftforge.api.distmarker.Dist;
-import net.minecraftforge.client.event.EntityRenderersEvent;
-import net.minecraftforge.eventbus.api.SubscribeEvent;
-import net.minecraftforge.fml.common.Mod;
+import net.neoforged.api.distmarker.Dist;
+import net.neoforged.neoforge.client.event.EntityRenderersEvent;
+import net.neoforged.bus.api.SubscribeEvent;
+import net.neoforged.fml.common.EventBusSubscriber;
 
-@Mod.EventBusSubscriber(modid = WishingFountain.MODID, value = Dist.CLIENT, bus = Mod.EventBusSubscriber.Bus.MOD)
+@EventBusSubscriber(modid = WishingFountain.MODID, value = Dist.CLIENT)
 public class ModelRenderEvent {
 
     @SubscribeEvent
