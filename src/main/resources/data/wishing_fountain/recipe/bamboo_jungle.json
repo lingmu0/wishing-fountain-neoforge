@@ -3,8 +3,8 @@
   "wish_type": "biome",
   "target": "minecraft:bamboo_jungle",
   "ingredients": [
-    { "item": "minecraft:bamboo" },
-    { "item": "minecraft:jungle_sapling" },
-    { "item": "minecraft:slime_ball" }
+    "minecraft:bamboo",
+    "minecraft:jungle_sapling",
+    "minecraft:slime_ball"
   ]
 }

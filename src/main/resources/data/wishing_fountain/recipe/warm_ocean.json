@@ -3,8 +3,8 @@
   "wish_type": "biome",
   "target": "minecraft:warm_ocean",
   "ingredients": [
-    { "item": "minecraft:kelp" },
-    { "item": "minecraft:tropical_fish_bucket" },
-    { "item": "minecraft:emerald" }
+    "minecraft:kelp",
+    "minecraft:tropical_fish_bucket",
+    "minecraft:emerald"
   ]
 }

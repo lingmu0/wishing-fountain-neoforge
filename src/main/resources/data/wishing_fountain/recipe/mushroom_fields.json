@@ -3,14 +3,8 @@
   "wish_type": "biome",
   "target": "minecraft:mushroom_fields",
   "ingredients": [
-    {
-      "item": "minecraft:brown_mushroom"
-    },
-    {
-      "item": "minecraft:red_mushroom"
-    },
-    {
-      "item": "minecraft:emerald"
-    }
+    "minecraft:brown_mushroom",
+    "minecraft:red_mushroom",
+    "minecraft:emerald"
   ]
 }

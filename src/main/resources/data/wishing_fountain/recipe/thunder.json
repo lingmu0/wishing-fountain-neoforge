@@ -3,11 +3,7 @@
   "wish_type": "weather",
   "target": "thunder",
   "ingredients": [
-    {
-      "item": "minecraft:emerald"
-    },
-    {
-      "item": "minecraft:lily_pad"
-    }
+    "minecraft:emerald",
+    "minecraft:lily_pad"
   ]
 }

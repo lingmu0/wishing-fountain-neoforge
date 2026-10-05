@@ -3,11 +3,7 @@
   "wish_type": "weather",
   "target": "clear",
   "ingredients": [
-    {
-      "item": "minecraft:emerald"
-    },
-    {
-      "item": "minecraft:sunflower"
-    }
+    "minecraft:emerald",
+    "minecraft:sunflower"
   ]
 }

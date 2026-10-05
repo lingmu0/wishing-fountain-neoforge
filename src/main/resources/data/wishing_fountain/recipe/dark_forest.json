@@ -3,8 +3,8 @@
   "wish_type": "biome",
   "target": "minecraft:dark_forest",
   "ingredients": [
-    { "item": "minecraft:lantern" },
-    { "item": "minecraft:red_mushroom" },
-    { "item": "minecraft:emerald" }
+    "minecraft:lantern",
+    "minecraft:red_mushroom",
+    "minecraft:emerald"
   ]
 }

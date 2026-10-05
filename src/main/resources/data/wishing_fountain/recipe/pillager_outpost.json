@@ -3,8 +3,8 @@
   "wish_type": "structure",
   "target": "minecraft:pillager_outpost",
   "ingredients": [
-    { "item": "minecraft:crossbow" },
-    { "item": "minecraft:oak_log" },
-    { "item": "minecraft:emerald" }
+    "minecraft:crossbow",
+    "minecraft:oak_log",
+    "minecraft:emerald"
   ]
 }

@@ -3,8 +3,8 @@
   "wish_type": "structure",
   "target": "minecraft:mineshaft",
   "ingredients": [
-    { "item": "minecraft:iron_ingot" },
-    { "item": "minecraft:torch" },
-    { "item": "minecraft:rail" }
+    "minecraft:iron_ingot",
+    "minecraft:torch",
+    "minecraft:rail"
   ]
 }

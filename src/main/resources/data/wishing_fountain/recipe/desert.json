@@ -3,8 +3,8 @@
   "wish_type": "biome",
   "target": "minecraft:desert",
   "ingredients": [
-    { "item": "minecraft:sand" },
-    { "item": "minecraft:dead_bush" },
-    { "item": "minecraft:emerald" }
+    "minecraft:sand",
+    "minecraft:dead_bush",
+    "minecraft:emerald"
   ]
 }

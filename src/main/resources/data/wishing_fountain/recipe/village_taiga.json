@@ -3,8 +3,8 @@
   "wish_type": "structure",
   "target": "minecraft:village_taiga",
   "ingredients": [
-    { "item": "minecraft:emerald" },
-    { "item": "minecraft:bread" },
-    { "item": "minecraft:spruce_planks" }
+    "minecraft:emerald",
+    "minecraft:bread",
+    "minecraft:spruce_planks"
   ]
 }

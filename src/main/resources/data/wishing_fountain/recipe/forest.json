@@ -3,8 +3,8 @@
   "wish_type": "biome",
   "target": "minecraft:forest",
   "ingredients": [
-    { "item": "minecraft:oak_sapling" },
-    { "item": "minecraft:apple" },
-    { "item": "minecraft:bone_meal" }
+    "minecraft:oak_sapling",
+    "minecraft:apple",
+    "minecraft:bone_meal"
   ]
 }

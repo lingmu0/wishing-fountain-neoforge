@@ -3,8 +3,8 @@
   "wish_type": "structure",
   "target": "minecraft:village_desert",
   "ingredients": [
-    { "item": "minecraft:emerald" },
-    { "item": "minecraft:bread" },
-    { "item": "minecraft:sandstone" }
+    "minecraft:emerald",
+    "minecraft:bread",
+    "minecraft:sandstone"
   ]
 }

@@ -3,14 +3,8 @@
   "wish_type": "structure",
   "target": "minecraft:desert_pyramid",
   "ingredients": [
-    {
-      "item": "minecraft:sandstone"
-    },
-    {
-      "item": "minecraft:gold_ingot"
-    },
-    {
-      "item": "minecraft:emerald"
-    }
+    "minecraft:sandstone",
+    "minecraft:gold_ingot",
+    "minecraft:emerald"
   ]
 }

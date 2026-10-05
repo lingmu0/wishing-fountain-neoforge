@@ -3,8 +3,8 @@
   "wish_type": "structure",
   "target": "minecraft:monument",
   "ingredients": [
-    { "item": "minecraft:prismarine_shard" },
-    { "item": "minecraft:nautilus_shell" },
-    { "item": "minecraft:emerald" }
+    "minecraft:prismarine_shard",
+    "minecraft:nautilus_shell",
+    "minecraft:emerald"
   ]
 }

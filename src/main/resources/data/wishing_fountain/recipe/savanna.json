@@ -3,8 +3,8 @@
   "wish_type": "biome",
   "target": "minecraft:savanna",
   "ingredients": [
-    { "item": "minecraft:hay_block" },
-    { "item": "minecraft:leather" },
-    { "item": "minecraft:emerald" }
+    "minecraft:hay_block",
+    "minecraft:leather",
+    "minecraft:emerald"
   ]
 }

@@ -3,8 +3,8 @@
   "wish_type": "structure",
   "target": "minecraft:jungle_pyramid",
   "ingredients": [
-    { "item": "minecraft:cocoa_beans" },
-    { "item": "minecraft:tripwire_hook" },
-    { "item": "minecraft:emerald" }
+    "minecraft:cocoa_beans",
+    "minecraft:tripwire_hook",
+    "minecraft:emerald"
   ]
 }

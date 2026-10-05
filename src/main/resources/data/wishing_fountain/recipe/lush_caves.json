@@ -3,8 +3,8 @@
   "wish_type": "biome",
   "target": "minecraft:lush_caves",
   "ingredients": [
-    { "item": "minecraft:azalea" },
-    { "item": "minecraft:moss_block" },
-    { "item": "minecraft:glow_berries" }
+    "minecraft:azalea",
+    "minecraft:moss_block",
+    "minecraft:glow_berries"
   ]
 }

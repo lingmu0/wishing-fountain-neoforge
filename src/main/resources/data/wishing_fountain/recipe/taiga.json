@@ -3,8 +3,8 @@
   "wish_type": "biome",
   "target": "minecraft:taiga",
   "ingredients": [
-    { "item": "minecraft:spruce_sapling" },
-    { "item": "minecraft:sweet_berries" },
-    { "item": "minecraft:fern" }
+    "minecraft:spruce_sapling",
+    "minecraft:sweet_berries",
+    "minecraft:fern"
   ]
 }

@@ -3,8 +3,8 @@
   "wish_type": "biome",
   "target": "minecraft:snowy_plains",
   "ingredients": [
-    { "item": "minecraft:snowball" },
-    { "item": "minecraft:spruce_sapling" },
-    { "item": "minecraft:white_wool" }
+    "minecraft:snowball",
+    "minecraft:spruce_sapling",
+    "minecraft:white_wool"
   ]
 }

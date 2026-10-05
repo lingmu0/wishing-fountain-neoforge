@@ -3,11 +3,7 @@
   "wish_type": "weather",
   "target": "rain",
   "ingredients": [
-    {
-      "item": "minecraft:emerald"
-    },
-    {
-      "item": "minecraft:blue_orchid"
-    }
+    "minecraft:emerald",
+    "minecraft:blue_orchid"
   ]
 }

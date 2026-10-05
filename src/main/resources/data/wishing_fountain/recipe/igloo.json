@@ -3,8 +3,8 @@
   "wish_type": "structure",
   "target": "minecraft:igloo",
   "ingredients": [
-    { "item": "minecraft:emerald" },
-    { "item": "minecraft:torch" },
-    { "item": "minecraft:white_wool" }
+    "minecraft:emerald",
+    "minecraft:torch",
+    "minecraft:white_wool"
   ]
 }

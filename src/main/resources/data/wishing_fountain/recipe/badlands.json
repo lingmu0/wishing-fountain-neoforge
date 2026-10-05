@@ -3,8 +3,8 @@
   "wish_type": "biome",
   "target": "minecraft:badlands",
   "ingredients": [
-    { "item": "minecraft:terracotta" },
-    { "item": "minecraft:dead_bush" },
-    { "item": "minecraft:gold_nugget" }
+    "minecraft:terracotta",
+    "minecraft:dead_bush",
+    "minecraft:gold_nugget"
   ]
 }

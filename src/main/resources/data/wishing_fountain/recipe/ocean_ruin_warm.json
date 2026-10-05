@@ -3,8 +3,8 @@
   "wish_type": "structure",
   "target": "minecraft:ocean_ruin_warm",
   "ingredients": [
-    { "item": "minecraft:iron_ingot" },
-    { "item": "minecraft:water_bucket" },
-    { "item": "minecraft:prismarine_shard" }
+    "minecraft:iron_ingot",
+    "minecraft:water_bucket",
+    "minecraft:prismarine_shard"
   ]
 }

@@ -3,8 +3,8 @@
   "wish_type": "biome",
   "target": "minecraft:cherry_grove",
   "ingredients": [
-    { "item": "minecraft:honeycomb" },
-    { "item": "minecraft:feather" },
-    { "item": "minecraft:emerald" }
+    "minecraft:honeycomb",
+    "minecraft:feather",
+    "minecraft:emerald"
   ]
 }

@@ -3,8 +3,8 @@
   "wish_type": "structure",
   "target": "minecraft:village_plains",
   "ingredients": [
-    { "item": "minecraft:emerald" },
-    { "item": "minecraft:bread" },
-    { "item": "minecraft:oak_planks" }
+    "minecraft:emerald",
+    "minecraft:bread",
+    "minecraft:oak_planks"
   ]
 }

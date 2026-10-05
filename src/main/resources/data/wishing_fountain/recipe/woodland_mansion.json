@@ -3,8 +3,8 @@
   "wish_type": "structure",
   "target": "minecraft:mansion",
   "ingredients": [
-    { "item": "minecraft:dark_oak_log" },
-    { "item": "minecraft:totem_of_undying" },
-    { "item": "minecraft:emerald" }
+    "minecraft:dark_oak_log",
+    "minecraft:totem_of_undying",
+    "minecraft:emerald"
   ]
 }

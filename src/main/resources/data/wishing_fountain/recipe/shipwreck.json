@@ -3,8 +3,8 @@
   "wish_type": "structure",
   "target": "minecraft:shipwreck",
   "ingredients": [
-    { "item": "minecraft:iron_ingot" },
-    { "item": "minecraft:oak_boat" },
-    { "item": "minecraft:paper" }
+    "minecraft:iron_ingot",
+    "minecraft:oak_boat",
+    "minecraft:paper"
   ]
 }

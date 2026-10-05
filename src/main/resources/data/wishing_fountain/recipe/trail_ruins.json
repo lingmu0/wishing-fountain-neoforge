@@ -3,8 +3,8 @@
   "wish_type": "structure",
   "target": "minecraft:trail_ruins",
   "ingredients": [
-    { "item": "minecraft:gold_ingot" },
-    { "item": "minecraft:brush" },
-    { "item": "minecraft:terracotta" }
+    "minecraft:gold_ingot",
+    "minecraft:brush",
+    "minecraft:terracotta"
   ]
 }

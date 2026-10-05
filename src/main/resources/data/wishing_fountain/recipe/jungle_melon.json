@@ -3,11 +3,7 @@
   "wish_type": "biome",
   "target": "minecraft:jungle",
   "ingredients": [
-    {
-      "item": "minecraft:emerald"
-    },
-    {
-      "item": "minecraft:melon_slice"
-    }
+    "minecraft:emerald",
+    "minecraft:melon_slice"
   ]
 }

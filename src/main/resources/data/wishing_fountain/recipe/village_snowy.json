@@ -3,8 +3,8 @@
   "wish_type": "structure",
   "target": "minecraft:village_snowy",
   "ingredients": [
-    { "item": "minecraft:emerald" },
-    { "item": "minecraft:bread" },
-    { "item": "minecraft:snowball" }
+    "minecraft:emerald",
+    "minecraft:bread",
+    "minecraft:snowball"
   ]
 }

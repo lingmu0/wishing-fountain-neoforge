@@ -3,8 +3,8 @@
   "wish_type": "biome",
   "target": "minecraft:birch_forest",
   "ingredients": [
-    { "item": "minecraft:birch_sapling" },
-    { "item": "minecraft:paper" },
-    { "item": "minecraft:white_wool" }
+    "minecraft:birch_sapling",
+    "minecraft:paper",
+    "minecraft:white_wool"
   ]
 }
