@@ -15,7 +15,6 @@ import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.ModLoadingContext;
 import net.neoforged.fml.common.Mod;
 import net.neoforged.fml.config.ModConfig;
-import net.neoforged.fml.event.lifecycle.FMLCommonSetupEvent;
 
 @Mod(WishingFountain.MODID)
 public class WishingFountain {
@@ -23,7 +22,7 @@ public class WishingFountain {
 
     public WishingFountain(IEventBus modBus){
         NeoForge.EVENT_BUS.register(new ForgeEvent());
-        modBus.addListener(this::setup);
+        modBus.addListener(AdvancementTriggerRegistry::register);
         NeoForge.EVENT_BUS.register(this);
         ModLoadingContext.get().getActiveContainer().registerConfig(ModConfig.Type.COMMON, CommonConfigs.SPEC, MODID + ".toml");
         ItemRegistry.ITEMS.register(modBus);
@@ -38,10 +37,6 @@ public class WishingFountain {
 
     public static ResourceLocation id(String path) {
         return ResourceLocation.fromNamespaceAndPath(MODID, path);
-    }
-
-    private void setup(final FMLCommonSetupEvent event) {
-        event.enqueueWork(AdvancementTriggerRegistry::register);
     }
 
     @SubscribeEvent
