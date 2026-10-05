@@ -10,6 +10,7 @@ import net.minecraft.resources.Identifier;
 import net.neoforged.neoforge.common.NeoForge;
 import net.neoforged.neoforge.event.RegisterCommandsEvent;
 import net.neoforged.neoforge.event.server.ServerStartingEvent;
+import net.neoforged.neoforge.event.OnDatapackSyncEvent;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.ModLoadingContext;
@@ -42,6 +43,11 @@ public class WishingFountain {
     @SubscribeEvent
     public void onServerStarting(ServerStartingEvent event) {
         MultiBlockManager.init();
+    }
+
+    @SubscribeEvent
+    public void onDatapackSync(OnDatapackSyncEvent event) {
+        event.sendRecipes(RecipeRegistry.WF_RECIPE_TYPE.get());
     }
 
     @SubscribeEvent
