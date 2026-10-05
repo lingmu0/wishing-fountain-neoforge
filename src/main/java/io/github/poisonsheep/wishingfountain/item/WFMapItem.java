@@ -41,8 +41,8 @@ public abstract class WFMapItem extends Item {
     protected static final String TARGET = "target";
     protected String type;
 
-    protected WFMapItem() {
-        super(new Item.Properties().stacksTo(1));
+    protected WFMapItem(Item.Properties properties) {
+        super(properties.stacksTo(1));
     }
 
     @Override

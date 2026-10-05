@@ -52,10 +52,6 @@ public class WFBlock extends BaseEntityBlock implements SimpleWaterloggedBlock {
     protected static final VoxelShape DEFAULT_SHAPE = Block.box(0.0D, 0.0D, 0.0D, 16.0D, 16.0D, 16.0D);
     protected static final VoxelShape BOTTOM_AABB = Block.box(0.0D, 0.0D, 0.0D, 16.0D, 8.0D, 16.0D);
 
-    public WFBlock() {
-        this(BlockBehaviour.Properties.of().sound(SoundType.STONE).strength(2, 2).noOcclusion());
-    }
-
     public WFBlock(BlockBehaviour.Properties properties) {
         super(properties);
         this.registerDefaultState(this.stateDefinition.any().setValue(FOUNTAIN, Integer.valueOf(1)).setValue(WATERLOGGED, Boolean.valueOf(false)));

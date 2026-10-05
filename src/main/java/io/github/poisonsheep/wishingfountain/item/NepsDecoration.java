@@ -2,11 +2,12 @@ package io.github.poisonsheep.wishingfountain.item;
 
 import io.github.poisonsheep.wishingfountain.registry.AdvancementTriggerRegistry;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.item.Item;
 
 public class NepsDecoration extends ModelChangedItem {
 
-    public NepsDecoration(){
-        super();
+    public NepsDecoration(Item.Properties properties){
+        super(properties);
         this.textureIndex = 2;
     }
 

@@ -30,8 +30,8 @@ abstract class ModelChangedItem extends Item {
 
     int textureIndex;
 
-    public ModelChangedItem() {
-        super(new Item.Properties().stacksTo(1));
+    public ModelChangedItem(Item.Properties properties) {
+        super(properties.stacksTo(1));
     }
 
     @Override

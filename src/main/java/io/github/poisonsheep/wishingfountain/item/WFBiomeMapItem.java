@@ -17,6 +17,7 @@ import net.minecraft.sounds.SoundSource;
 import net.minecraft.util.Mth;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.biome.Biome;
 import net.minecraft.world.level.biome.BiomeSource;
@@ -38,8 +39,8 @@ public class WFBiomeMapItem extends WFMapItem {
 
     private final Identifier target_biome = Biomes.MUSHROOM_FIELDS.identifier();
 
-    public WFBiomeMapItem() {
-        super();
+    public WFBiomeMapItem(Item.Properties properties) {
+        super(properties);
         type = "biome";
     }
 
