@@ -9,6 +9,7 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.item.ItemEntity;
@@ -18,27 +19,25 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.levelgen.structure.templatesystem.StructureTemplate;
-import net.minecraftforge.event.TickEvent;
-import net.minecraftforge.eventbus.api.SubscribeEvent;
-import net.minecraftforge.fml.ModList;
-import net.minecraftforge.fml.common.Mod;
-import net.minecraftforge.registries.ForgeRegistries;
+import net.neoforged.neoforge.event.tick.PlayerTickEvent;
+import net.neoforged.bus.api.SubscribeEvent;
+import net.neoforged.fml.ModList;
 
 import java.util.List;
 
-@Mod.EventBusSubscriber(modid = WishingFountain.MODID, bus = Mod.EventBusSubscriber.Bus.FORGE)
 public class ForgeEvent {
     @SubscribeEvent
-    public void onPlayerTick(TickEvent.PlayerTickEvent event) {
-        Player player = event.player;
+    public void onPlayerTick(PlayerTickEvent.Post event) {
+        Player player = event.getEntity();
         Level worldIn = player.level();
         Direction direction = player.getDirection();
-        if (!worldIn.isClientSide && event.phase == TickEvent.Phase.END) {
+        if (!worldIn.isClientSide) {
             List<ItemEntity> itemEntityList = worldIn.getEntitiesOfClass(ItemEntity.class, player.getBoundingBox().inflate(32.0F));
             for (ItemEntity itemEntity : itemEntityList) {
                 ItemStack itemStack = itemEntity.getItem();
                 // 检查物品是否可以用于创建结构
-                Item triggerItem = ForgeRegistries.ITEMS.getValue(ResourceLocation.tryParse(CommonConfigs.TRIGGER_ITEM.get()));
+                ResourceLocation triggerId = ResourceLocation.tryParse(CommonConfigs.TRIGGER_ITEM.get());
+                Item triggerItem = triggerId == null ? null : BuiltInRegistries.ITEM.get(triggerId);
                 if (itemStack.getItem() == triggerItem) {
                     List<IMultiBlock> multiBlockList = MultiBlockManager.getMultiBlockList();
                     BlockPos pos = itemEntity.blockPosition();

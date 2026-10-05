@@ -4,6 +4,7 @@ import io.github.poisonsheep.wishingfountain.registry.BlockRegistry;
 import io.github.poisonsheep.wishingfountain.util.PosListData;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.Tag;
 import net.minecraft.network.protocol.Packet;
@@ -17,9 +18,9 @@ import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.AABB;
-import net.minecraftforge.api.distmarker.Dist;
-import net.minecraftforge.api.distmarker.OnlyIn;
-import net.minecraftforge.items.ItemStackHandler;
+import net.neoforged.api.distmarker.Dist;
+import net.neoforged.api.distmarker.OnlyIn;
+import net.neoforged.neoforge.items.ItemStackHandler;
 import org.jetbrains.annotations.NotNull;
 
 import javax.annotation.Nullable;
@@ -74,30 +75,30 @@ public class WFEntity extends BlockEntity {
     }
 
     @Override
-    public void saveAdditional(CompoundTag compound) {
-        getPersistentData().putBoolean(IS_RENDER, isRender);
-        getPersistentData().putBoolean(CAN_PLACE_ITEM, canPlaceItem);
-        getPersistentData().putInt(STORAGE_STATE_ID, Block.getId(storageState));
-        getPersistentData().putInt(TEXTURE_INDEX, textureIndex);
-        getPersistentData().putString(DIRECTION, direction.getSerializedName());
-        getPersistentData().put(STORAGE_BLOCK_LIST, blockPosList.serialize());
-        getPersistentData().put(STORAGE_ITEM, handler.serializeNBT());
-        super.saveAdditional(compound);
+    protected void saveAdditional(CompoundTag compound, HolderLookup.Provider registries) {
+        compound.putBoolean(IS_RENDER, isRender);
+        compound.putBoolean(CAN_PLACE_ITEM, canPlaceItem);
+        compound.putInt(STORAGE_STATE_ID, Block.getId(storageState));
+        compound.putInt(TEXTURE_INDEX, textureIndex);
+        compound.putString(DIRECTION, direction.getSerializedName());
+        compound.put(STORAGE_BLOCK_LIST, blockPosList.serialize());
+        compound.put(STORAGE_ITEM, handler.serializeNBT(registries));
+        super.saveAdditional(compound, registries);
     }
 
     @Override
-    public void load(CompoundTag nbt) {
-        super.load(nbt);
-        isRender = getPersistentData().getBoolean(IS_RENDER);
-        canPlaceItem = getPersistentData().getBoolean(CAN_PLACE_ITEM);
-        storageState = Block.stateById(getPersistentData().getInt(STORAGE_STATE_ID));
-        textureIndex = getPersistentData().getInt(TEXTURE_INDEX);
-        direction = Direction.byName(getPersistentData().getString(DIRECTION));
+    protected void loadAdditional(CompoundTag nbt, HolderLookup.Provider registries) {
+        super.loadAdditional(nbt, registries);
+        isRender = nbt.getBoolean(IS_RENDER);
+        canPlaceItem = nbt.getBoolean(CAN_PLACE_ITEM);
+        storageState = Block.stateById(nbt.getInt(STORAGE_STATE_ID));
+        textureIndex = nbt.getInt(TEXTURE_INDEX);
+        direction = Direction.byName(nbt.getString(DIRECTION));
         if (direction == null) {
             direction = Direction.SOUTH;
         }
-        blockPosList.deserialize(getPersistentData().getList(STORAGE_BLOCK_LIST, Tag.TAG_COMPOUND));
-        handler.deserializeNBT(getPersistentData().getCompound(STORAGE_ITEM));
+        blockPosList.deserialize(nbt.getList(STORAGE_BLOCK_LIST, Tag.TAG_COMPOUND));
+        handler.deserializeNBT(registries, nbt.getCompound(STORAGE_ITEM));
     }
 
     public ItemStack getStorageItem() {
@@ -128,16 +129,16 @@ public class WFEntity extends BlockEntity {
         refresh();
     }
 
-    @Override
     @OnlyIn(Dist.CLIENT)
     public AABB getRenderBoundingBox() {
-        return new AABB(worldPosition.offset(-3, -2, -3), worldPosition.offset(3, 2, 3));
+        return new AABB(worldPosition.getX() - 3, worldPosition.getY() - 2, worldPosition.getZ() - 3,
+                worldPosition.getX() + 3, worldPosition.getY() + 2, worldPosition.getZ() + 3);
     }
 
     @NotNull
     @Override
-    public CompoundTag getUpdateTag() {
-        return saveWithoutMetadata();
+    public CompoundTag getUpdateTag(HolderLookup.Provider registries) {
+        return saveWithoutMetadata(registries);
     }
 
     @Nullable

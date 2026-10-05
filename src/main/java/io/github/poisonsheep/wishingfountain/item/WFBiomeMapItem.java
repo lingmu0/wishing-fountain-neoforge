@@ -1,6 +1,7 @@
 package io.github.poisonsheep.wishingfountain.item;
 
 import io.github.poisonsheep.wishingfountain.config.CommonConfigs;
+import io.github.poisonsheep.wishingfountain.util.ItemStackData;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.GlobalPos;
@@ -70,8 +71,9 @@ public class WFBiomeMapItem extends WFMapItem {
 
     //并发搜索模式
     protected InteractionResultHolder<BlockPos> searchConcurrent(ResourceLocation targetBiome, ServerLevel worldIn, ItemStack stack, Player player) {
-        int centerX = (int) stack.getOrCreateTag().getDouble(SOURCE_X);
-        int centerZ = (int) stack.getOrCreateTag().getDouble(SOURCE_Z);
+        var tag = ItemStackData.get(stack);
+        int centerX = (int) tag.getDouble(SOURCE_X);
+        int centerZ = (int) tag.getDouble(SOURCE_Z);
         BlockPos centerPos = new BlockPos(centerX, 64, centerZ);
         Key key = new Key(GlobalPos.of(worldIn.dimension(), centerPos), targetBiome);
         if(COMPUTING.contains(key)) {
@@ -95,9 +97,9 @@ public class WFBiomeMapItem extends WFMapItem {
 
     protected InteractionResultHolder<BlockPos> searchIterative(ResourceLocation targetBiome, ItemStack stack, ServerLevel worldIn, Player player) {
         BlockPos startPos = new BlockPos(
-                stack.getOrCreateTag().getInt(SOURCE_X),
+                ItemStackData.get(stack).getInt(SOURCE_X),
                 player.getBlockY(),
-                stack.getOrCreateTag().getInt(SOURCE_Z)
+                ItemStackData.get(stack).getInt(SOURCE_Z)
         );
         return searchBiome(worldIn, startPos, targetBiome);
     }
@@ -212,7 +214,7 @@ public class WFBiomeMapItem extends WFMapItem {
     }
 
     public static void setTarget(ItemStack itemStack, String target) {
-        itemStack.getOrCreateTag().putString(TARGET, target);
+        ItemStackData.update(itemStack, tag -> tag.putString(TARGET, target));
     }
 
     private record Key(GlobalPos pos, ResourceLocation target) {}

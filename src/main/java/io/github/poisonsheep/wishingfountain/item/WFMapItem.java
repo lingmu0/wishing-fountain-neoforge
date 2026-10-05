@@ -1,8 +1,10 @@
 package io.github.poisonsheep.wishingfountain.item;
 
 import io.github.poisonsheep.wishingfountain.config.CommonConfigs;
+import io.github.poisonsheep.wishingfountain.util.ItemStackData;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.component.DataComponents;
 import net.minecraft.core.Direction;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
@@ -17,8 +19,9 @@ import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.MapItem;
 import net.minecraft.world.item.TooltipFlag;
+import net.minecraft.world.item.Item.TooltipContext;
 import net.minecraft.world.level.Level;
-import net.minecraft.world.level.saveddata.maps.MapDecoration;
+import net.minecraft.world.level.saveddata.maps.MapDecorationTypes;
 import net.minecraft.world.level.saveddata.maps.MapItemSavedData;
 import net.minecraft.world.phys.Vec3;
 import org.jetbrains.annotations.Nullable;
@@ -52,17 +55,19 @@ abstract class WFMapItem extends Item {
             return InteractionResultHolder.fail(handStack);
         }
         Vec3 pos = player.getPosition(1F);
-        handStack.getOrCreateTag().putBoolean(IS_SEARCHING, true);
-        handStack.getOrCreateTag().putInt(SOURCE_X, (int) pos.x);
-        handStack.getOrCreateTag().putInt(SOURCE_Z, (int) pos.z);
-        handStack.getOrCreateTag().putDouble(DISTANCE, Double.MAX_VALUE);
+        ItemStackData.update(handStack, tag -> {
+            tag.putBoolean(IS_SEARCHING, true);
+            tag.putInt(SOURCE_X, (int) pos.x);
+            tag.putInt(SOURCE_Z, (int) pos.z);
+            tag.putDouble(DISTANCE, Double.MAX_VALUE);
+        });
         playSound(worldIn, player);
         return InteractionResultHolder.sidedSuccess(handStack, worldIn.isClientSide);
     }
 
     @Override
     public void inventoryTick(ItemStack stack, Level worldIn, Entity entity, int slot, boolean hand) {
-        if (stack.getTag() != null && stack.getTag().getBoolean(IS_SEARCHING) && entity instanceof Player player) {
+        if (ItemStackData.get(stack).getBoolean(IS_SEARCHING) && entity instanceof Player player) {
             if(worldIn instanceof ServerLevel server) {
                 ItemStack runningStack = search(stack, server, player, slot);
                 if(player.getOffhandItem() == stack){
@@ -78,9 +83,9 @@ abstract class WFMapItem extends Item {
     }
 
     @Override
-    public void appendHoverText(ItemStack stack, @Nullable Level worldIn, List<Component> list, TooltipFlag flag) {
+    public void appendHoverText(ItemStack stack, TooltipContext context, List<Component> list, TooltipFlag flag) {
         list.add(Component.translatable("wishing_fountain.misc.map_description"));
-        if(stack.getOrCreateTag().getBoolean(IS_SEARCHING)) {
+        if(ItemStackData.get(stack).getBoolean(IS_SEARCHING)) {
             list.add(Component.translatable("wishing_fountain.misc.is_searching"));
         } else if(getTarget(stack) != null) {
             if(Screen.hasShiftDown()) {
@@ -92,12 +97,13 @@ abstract class WFMapItem extends Item {
     }
 
     protected static BlockPos nextPos(ItemStack stack, int step) {
-        int sourceX = (int) stack.getOrCreateTag().getDouble(SOURCE_X);
-        int sourceZ = (int) stack.getOrCreateTag().getDouble(SOURCE_Z);
-        int x = stack.getOrCreateTag().getInt(POS_X);
-        int z = stack.getOrCreateTag().getInt(POS_Z);
-        int leg = stack.getOrCreateTag().getInt(POS_LEG);
-        int legIndex = stack.getOrCreateTag().getInt(POS_LEG_INDEX);
+        var tag = ItemStackData.get(stack);
+        int sourceX = (int) tag.getDouble(SOURCE_X);
+        int sourceZ = (int) tag.getDouble(SOURCE_Z);
+        int x = tag.getInt(POS_X);
+        int z = tag.getInt(POS_Z);
+        int leg = tag.getInt(POS_LEG);
+        int legIndex = tag.getInt(POS_LEG_INDEX);
         BlockPos cursor = new BlockPos(x, 0, z).relative(DIRECTIONS[(leg + 4) % 4]);
         int newX = cursor.getX();
         int newZ = cursor.getZ();
@@ -110,10 +116,14 @@ abstract class WFMapItem extends Item {
             legIndex = 0;
         }
         legIndex++;
-        stack.getOrCreateTag().putInt(POS_X, newX);
-        stack.getOrCreateTag().putInt(POS_Z, newZ);
-        stack.getOrCreateTag().putInt(POS_LEG, leg);
-        stack.getOrCreateTag().putInt(POS_LEG_INDEX, legIndex);
+        int savedLeg = leg;
+        int savedLegIndex = legIndex;
+        ItemStackData.update(stack, updated -> {
+            updated.putInt(POS_X, newX);
+            updated.putInt(POS_Z, newZ);
+            updated.putInt(POS_LEG, savedLeg);
+            updated.putInt(POS_LEG_INDEX, savedLegIndex);
+        });
         int retX = sourceX + newX * step;
         int retZ = sourceZ + newZ * step;
         return new BlockPos(retX, 0, retZ);
@@ -122,7 +132,7 @@ abstract class WFMapItem extends Item {
     private ItemStack getSearchingMap(Player player) {
         for(ItemStack stack : player.getInventory().items) {
             if(stack.getItem() instanceof WFMapItem) {
-                boolean searching = stack.getOrCreateTag().getBoolean(IS_SEARCHING);
+                boolean searching = ItemStackData.get(stack).getBoolean(IS_SEARCHING);
                 if(searching)
                     return stack;
             }
@@ -133,10 +143,10 @@ abstract class WFMapItem extends Item {
     public ItemStack createMap(ServerLevel level, BlockPos targetPos, ResourceLocation target) {
         ItemStack stack = MapItem.create(level, targetPos.getX(), targetPos.getZ(), (byte) 2, true, true);
         MapItem.renderBiomePreviewMap(level, stack);
-        MapItemSavedData.addTargetDecoration(stack, targetPos, "+", MapDecoration.Type.RED_X);
+        MapItemSavedData.addTargetDecoration(stack, targetPos, "+", MapDecorationTypes.RED_X);
         // 这里不能用getTarget而是用参数传入，是因为生成的地图并没有标签
-        stack.setHoverName(Component.translatable("wishing_fountain.misc.map", Component.translatable(getType() + "." + target.toString().replace(":", "."))));
-        stack.getOrCreateTag().putBoolean(IS_SEARCHING, true);
+        stack.set(DataComponents.CUSTOM_NAME, Component.translatable("wishing_fountain.misc.map", Component.translatable(getType() + "." + target.toString().replace(":", "."))));
+        ItemStackData.update(stack, tag -> tag.putBoolean(IS_SEARCHING, true));
         return stack;
     }
 
@@ -147,11 +157,11 @@ abstract class WFMapItem extends Item {
     }
 
     protected ResourceLocation getTarget(ItemStack stack) {
-        String tag = stack.getOrCreateTag().getString(TARGET);
-        if (tag.isEmpty()) {
+        String target = ItemStackData.get(stack).getString(TARGET);
+        if (target.isEmpty()) {
             return getDefaultTarget();
         }
-        return ResourceLocation.tryParse(tag);
+        return ResourceLocation.tryParse(target);
     }
 
     protected abstract ResourceLocation getDefaultTarget();

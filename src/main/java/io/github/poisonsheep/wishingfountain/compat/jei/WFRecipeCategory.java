@@ -20,8 +20,8 @@ import java.util.List;
 public class WFRecipeCategory implements IRecipeCategory<WFRecipeWrapper> {
     public static final RecipeType<WFRecipeWrapper> WISHING_FOUNTAIN = RecipeType.create(WishingFountain.MODID, "wishing_fountain", WFRecipeWrapper.class);
     private static final MutableComponent TITLE = Component.translatable("jei.wishing_fountain.wf_recipe.title");
-    private static final ResourceLocation WF_ICON = new ResourceLocation(WishingFountain.MODID, "textures/gui/wishing_fountain_icon.png");
-    protected static final ResourceLocation BACKGROUND = new ResourceLocation(WishingFountain.MODID, "textures/gui/sea.png");
+    private static final ResourceLocation WF_ICON = WishingFountain.id("textures/gui/wishing_fountain_icon.png");
+    protected static final ResourceLocation BACKGROUND = WishingFountain.id("textures/gui/sea.png");
     private final IDrawableStatic bgDraw;
     private final IDrawableStatic wfDraw;
 

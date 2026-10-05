@@ -1,5 +1,6 @@
 package io.github.poisonsheep.wishingfountain.block;
 
+import com.mojang.serialization.MapCodec;
 import io.github.poisonsheep.wishingfountain.inventory.WFRecipeInventory;
 import io.github.poisonsheep.wishingfountain.recipe.WFRecipe;
 import io.github.poisonsheep.wishingfountain.registry.RecipeRegistry;
@@ -10,6 +11,7 @@ import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
+import net.minecraft.world.ItemInteractionResult;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.entity.player.Player;
@@ -35,12 +37,14 @@ import net.minecraft.world.level.material.Fluids;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.VoxelShape;
-import net.minecraftforge.items.ItemHandlerHelper;
+import net.neoforged.neoforge.items.ItemHandlerHelper;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.*;
 
 public class WFBlock extends BaseEntityBlock implements SimpleWaterloggedBlock {
+
+    private static final MapCodec<WFBlock> CODEC = simpleCodec(WFBlock::new);
 
     public static final IntegerProperty FOUNTAIN = IntegerProperty.create("fountain", 1, 2);
     public static final BooleanProperty WATERLOGGED = BlockStateProperties.WATERLOGGED;
@@ -48,7 +52,11 @@ public class WFBlock extends BaseEntityBlock implements SimpleWaterloggedBlock {
     protected static final VoxelShape BOTTOM_AABB = Block.box(0.0D, 0.0D, 0.0D, 16.0D, 8.0D, 16.0D);
 
     public WFBlock() {
-        super(BlockBehaviour.Properties.of().sound(SoundType.STONE).strength(2, 2).noOcclusion());
+        this(BlockBehaviour.Properties.of().sound(SoundType.STONE).strength(2, 2).noOcclusion());
+    }
+
+    public WFBlock(BlockBehaviour.Properties properties) {
+        super(properties);
         this.registerDefaultState(this.stateDefinition.any().setValue(FOUNTAIN, Integer.valueOf(1)).setValue(WATERLOGGED, Boolean.valueOf(false)));
     }
 
@@ -67,17 +75,34 @@ public class WFBlock extends BaseEntityBlock implements SimpleWaterloggedBlock {
     }
 
     @Override
-    public InteractionResult use(BlockState state, Level worldIn, BlockPos pos, Player player, InteractionHand handIn, BlockHitResult hit) {
-        return this.getEntity(worldIn, pos).filter(wishingFountain -> handIn == InteractionHand.MAIN_HAND).map(wishingFountain -> {
+    protected InteractionResult useWithoutItem(BlockState state, Level worldIn, BlockPos pos, Player player, BlockHitResult hit) {
+        return this.getEntity(worldIn, pos).filter(WFEntity::isCanPlaceItem).map(wishingFountain -> {
             if (wishingFountain.isCanPlaceItem()) {
                 if (player.getMainHandItem().isEmpty()) {
                     return takeOutItem(worldIn, wishingFountain, player);
                 } else {
-                    return takeInItem(worldIn, wishingFountain, player);
+                    return InteractionResult.PASS;
                 }
             }
-            return InteractionResult.FAIL;
-        }).orElse(super.use(state, worldIn, pos, player, handIn, hit));
+            return InteractionResult.PASS;
+        }).orElse(super.useWithoutItem(state, worldIn, pos, player, hit));
+    }
+
+    @Override
+    protected MapCodec<? extends BaseEntityBlock> codec() {
+        return CODEC;
+    }
+
+    @Override
+    protected ItemInteractionResult useItemOn(ItemStack stack, BlockState state, Level worldIn, BlockPos pos,
+                                                Player player, InteractionHand hand, BlockHitResult hit) {
+        if (hand != InteractionHand.MAIN_HAND) return ItemInteractionResult.PASS_TO_DEFAULT_BLOCK_INTERACTION;
+        return this.getEntity(worldIn, pos).filter(WFEntity::isCanPlaceItem).map(wishingFountain -> {
+            InteractionResult result = takeInItem(worldIn, wishingFountain, player);
+            if (result.consumesAction()) return ItemInteractionResult.sidedSuccess(worldIn.isClientSide);
+            return result == InteractionResult.FAIL ? ItemInteractionResult.FAIL
+                    : ItemInteractionResult.PASS_TO_DEFAULT_BLOCK_INTERACTION;
+        }).orElse(super.useItemOn(stack, state, worldIn, pos, player, hand, hit));
     }
 
     private InteractionResult takeOutItem(Level worldIn, WFEntity wishingFountain, Player player) {
@@ -138,7 +163,7 @@ public class WFBlock extends BaseEntityBlock implements SimpleWaterloggedBlock {
     }
 
     @Override
-    public void playerWillDestroy(Level worldIn, BlockPos pos, BlockState state, Player player) {
+    public BlockState playerWillDestroy(Level worldIn, BlockPos pos, BlockState state, Player player) {
         if (!worldIn.isClientSide) {
             this.getEntity(worldIn, pos).ifPresent(entity -> {
                 this.restoreStorageBlock(worldIn, pos, entity.getBlockPosList());
@@ -149,7 +174,7 @@ public class WFBlock extends BaseEntityBlock implements SimpleWaterloggedBlock {
                 }
             });
         }
-        super.playerWillDestroy(worldIn, pos, state, player);
+        return super.playerWillDestroy(worldIn, pos, state, player);
     }
 
     @Override
@@ -188,9 +213,10 @@ public class WFBlock extends BaseEntityBlock implements SimpleWaterloggedBlock {
                 }
             }
         }
-        Optional<WFRecipe> optionalRecipe = worldIn.getRecipeManager().getAllRecipesFor(RecipeRegistry.WF_RECIPE_TYPE).stream().filter(r -> r.matches(inv, worldIn)).findFirst();
-        optionalRecipe.ifPresent(r -> r.spawnOutputEntity(worldIn, player.getOnPos()));
-        optionalRecipe.ifPresent(r -> removeIngredients(worldIn, inv, posList));
+        Optional<net.minecraft.world.item.crafting.RecipeHolder<WFRecipe>> optionalRecipe =
+                worldIn.getRecipeManager().getRecipeFor(RecipeRegistry.WF_RECIPE_TYPE.get(), inv, worldIn);
+        optionalRecipe.ifPresent(holder -> holder.value().spawnOutputEntity(worldIn, player.getOnPos()));
+        optionalRecipe.ifPresent(holder -> removeIngredients(worldIn, inv, posList));
     }
 
     private void removeIngredients(Level worldIn, WFRecipeInventory inv, List<BlockPos> posList) {
@@ -243,19 +269,24 @@ public class WFBlock extends BaseEntityBlock implements SimpleWaterloggedBlock {
     }
 
     @Override
-    public boolean canPlaceLiquid(BlockGetter getter, BlockPos pos, BlockState state, Fluid fluid) {
+    public boolean canPlaceLiquid(Player player, BlockGetter getter, BlockPos pos, BlockState state, Fluid fluid) {
         if(!(state.getValue(FOUNTAIN) == 2)) {
             return false;
         }
-        return SimpleWaterloggedBlock.super.canPlaceLiquid(getter, pos, state, fluid);
+        return SimpleWaterloggedBlock.super.canPlaceLiquid(player, getter, pos, state, fluid);
     }
 
     @Override
-    public ItemStack pickupBlock(LevelAccessor accessor, BlockPos pos, BlockState state) {
+    public ItemStack pickupBlock(Player player, LevelAccessor accessor, BlockPos pos, BlockState state) {
         if(state.getValue(FOUNTAIN) == 2) {
             return new ItemStack(Items.WATER_BUCKET);
         }
         return ItemStack.EMPTY;
+    }
+
+    @Override
+    public Optional<net.minecraft.sounds.SoundEvent> getPickupSound() {
+        return Optional.of(net.minecraft.sounds.SoundEvents.BUCKET_FILL);
     }
 
     @Override

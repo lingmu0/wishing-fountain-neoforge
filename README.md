@@ -1,3 +1,13 @@
+# Wishing Fountain NeoForge port
+
+This workspace ports the MIT-licensed [Wishing Fountain](https://github.com/poisonsheep/Wishing-Fountain) mod to NeoForge. Use branch `neoforge-1.21.1` for Minecraft 1.21.1 and `neoforge-26.1.2` for Minecraft 26.1.2. The original authors and license are retained in `CREDITS.txt` and `LICENSE.txt`.
+
+## Development status
+
+The branches are being migrated independently because Minecraft 26.1 uses Java 25 and a newer NeoForge/Gradle toolchain than 1.21.1. Build with the wrapper on the branch you intend to work on.
+
+---
+
 # Wishing Fountain Mod
 
 This mod adds a multiblock structure and two key items (Buddelschiff) that allow players to obtain location maps (for biomes or structures), directly acquire specific items, or change weather conditions through wishing.

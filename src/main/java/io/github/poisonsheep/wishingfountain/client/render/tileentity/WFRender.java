@@ -31,11 +31,11 @@ public class WFRender implements BlockEntityRenderer<WFEntity> {
 
     private final WFNepModel NEP_MODEL;
 
-    private static final ResourceLocation DEFAULT_TEXTURE = new ResourceLocation(WishingFountain.MODID, "textures/entity/default_wishing_fountain.png");
+    private static final ResourceLocation DEFAULT_TEXTURE = WishingFountain.id("textures/entity/default_wishing_fountain.png");
 
-    private static final ResourceLocation MONOKUMA_TEXTURE = new ResourceLocation(WishingFountain.MODID, "textures/entity/monokuma_wishing_fountain.png");
+    private static final ResourceLocation MONOKUMA_TEXTURE = WishingFountain.id("textures/entity/monokuma_wishing_fountain.png");
 
-    private static final ResourceLocation NEP_TEXTURE = new ResourceLocation(WishingFountain.MODID, "textures/entity/nep_wishing_fountain.png");
+    private static final ResourceLocation NEP_TEXTURE = WishingFountain.id("textures/entity/nep_wishing_fountain.png");
 
     public WFRender(BlockEntityRendererProvider.Context render) {
         DEFAULT_MODEL = new WFDefaultModel(render.bakeLayer(WFDefaultModel.LAYER_LOCATION));
@@ -52,13 +52,13 @@ public class WFRender implements BlockEntityRenderer<WFEntity> {
             poseStack.mulPose(Axis.ZN.rotationDegrees(180));
             if(entity.getTextureIndex() == 1) {
                 VertexConsumer buffer = source.getBuffer(RenderType.entityTranslucent(MONOKUMA_TEXTURE));
-                MONOKUMA_MODEL.renderToBuffer(poseStack, buffer, combinedLightIn, combinedOverlayIn, 1.0F, 1.0F, 1.0F, 1.0F);
+                MONOKUMA_MODEL.renderToBuffer(poseStack, buffer, combinedLightIn, combinedOverlayIn, -1);
             } else if(entity.getTextureIndex() == 2) {
                 VertexConsumer buffer = source.getBuffer(RenderType.entityTranslucent(NEP_TEXTURE));
-                NEP_MODEL.renderToBuffer(poseStack, buffer, combinedLightIn, combinedOverlayIn, 1.0F, 1.0F, 1.0F, 1.0F);
+                NEP_MODEL.renderToBuffer(poseStack, buffer, combinedLightIn, combinedOverlayIn, -1);
             } else {
                 VertexConsumer buffer = source.getBuffer(RenderType.entityTranslucent(DEFAULT_TEXTURE));
-                DEFAULT_MODEL.renderToBuffer(poseStack, buffer, combinedLightIn, combinedOverlayIn, 1.0F, 1.0F, 1.0F, 1.0F);
+                DEFAULT_MODEL.renderToBuffer(poseStack, buffer, combinedLightIn, combinedOverlayIn, -1);
             }
             poseStack.popPose();
         }

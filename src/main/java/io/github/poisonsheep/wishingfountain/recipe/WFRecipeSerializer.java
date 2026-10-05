@@ -1,51 +1,57 @@
 package io.github.poisonsheep.wishingfountain.recipe;
 
-import com.google.gson.JsonArray;
-import com.google.gson.JsonObject;
+import com.mojang.serialization.Codec;
+import com.mojang.serialization.MapCodec;
+import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.core.NonNullList;
-import net.minecraft.network.FriendlyByteBuf;
-import net.minecraft.resources.ResourceLocation;
-import net.minecraft.util.GsonHelper;
+import net.minecraft.network.RegistryFriendlyByteBuf;
+import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.world.item.crafting.Ingredient;
 import net.minecraft.world.item.crafting.RecipeSerializer;
-import org.jetbrains.annotations.Nullable;
 
-public class WFRecipeSerializer implements RecipeSerializer<WFRecipe> {
+import java.util.List;
 
-    @Override
-    public WFRecipe fromJson(ResourceLocation id, JsonObject json) {
-        String type = GsonHelper.getAsString(json, "wish_type");
-        String target = GsonHelper.getAsString(json, "target");
-        NonNullList<Ingredient> ingredients = itemsFromJson(GsonHelper.getAsJsonArray(json, "ingredients"));
-        return new WFRecipe(id, type, target, ingredients);
+public final class WFRecipeSerializer implements RecipeSerializer<WFRecipe> {
+    private static final MapCodec<WFRecipe> CODEC = RecordCodecBuilder.mapCodec(instance -> instance.group(
+            Codec.STRING.fieldOf("wish_type").forGetter(WFRecipe::getMapType),
+            Codec.STRING.fieldOf("target").forGetter(WFRecipe::getTarget),
+            Ingredient.LIST_CODEC_NONEMPTY.fieldOf("ingredients").forGetter(WFRecipe::getIngredients)
+    ).apply(instance, WFRecipeSerializer::create));
+
+    private static final StreamCodec<RegistryFriendlyByteBuf, WFRecipe> STREAM_CODEC = StreamCodec.of(
+            (buffer, recipe) -> {
+                buffer.writeUtf(recipe.getMapType());
+                buffer.writeUtf(recipe.getTarget());
+                buffer.writeVarInt(recipe.getIngredients().size());
+                for (Ingredient ingredient : recipe.getIngredients()) {
+                    Ingredient.CONTENTS_STREAM_CODEC.encode(buffer, ingredient);
+                }
+            },
+            buffer -> {
+                String wishType = buffer.readUtf();
+                String target = buffer.readUtf();
+                int size = buffer.readVarInt();
+                NonNullList<Ingredient> ingredients = NonNullList.withSize(size, Ingredient.EMPTY);
+                for (int i = 0; i < size; i++) {
+                    ingredients.set(i, Ingredient.CONTENTS_STREAM_CODEC.decode(buffer));
+                }
+                return new WFRecipe(wishType, target, ingredients);
+            }
+    );
+
+    private static WFRecipe create(String wishType, String target, List<Ingredient> values) {
+        NonNullList<Ingredient> ingredients = NonNullList.create();
+        ingredients.addAll(values);
+        return new WFRecipe(wishType, target, ingredients);
     }
 
     @Override
-    public @Nullable WFRecipe fromNetwork(ResourceLocation id, FriendlyByteBuf buf) {
-        String type = buf.readUtf();
-        String target = buf.readUtf();
-        int i = buf.readVarInt();
-        NonNullList<Ingredient> ingredients = NonNullList.withSize(i, Ingredient.EMPTY);
-        ingredients.replaceAll(ignored -> Ingredient.fromNetwork(buf));
-        return new WFRecipe(id,type, target, ingredients);
+    public MapCodec<WFRecipe> codec() {
+        return CODEC;
     }
 
     @Override
-    public void toNetwork(FriendlyByteBuf buf, WFRecipe recipe) {
-        buf.writeUtf(recipe.getMapType());
-        buf.writeUtf(recipe.getTarget());
-        buf.writeVarInt(recipe.getIngredients().size());
-        for (Ingredient ingredient : recipe.getIngredients()) {
-            ingredient.toNetwork(buf);
-        }
-    }
-
-    private static NonNullList<Ingredient> itemsFromJson(JsonArray p_44276_) {
-        NonNullList<Ingredient> nonnulllist = NonNullList.create();
-        for(int i = 0; i < p_44276_.size(); ++i) {
-            Ingredient ingredient = Ingredient.fromJson(p_44276_.get(i), false);
-            nonnulllist.add(ingredient);
-        }
-        return nonnulllist;
+    public StreamCodec<RegistryFriendlyByteBuf, WFRecipe> streamCodec() {
+        return STREAM_CODEC;
     }
 }

@@ -8,7 +8,7 @@ import net.minecraft.resources.ResourceLocation;
 
 @mezz.jei.api.JeiPlugin
 public class JeiPlugin implements IModPlugin {
-    private static final ResourceLocation UID = new ResourceLocation(WishingFountain.MODID, "jei");
+    private static final ResourceLocation UID = WishingFountain.id("jei");
 
     @Override
     public ResourceLocation getPluginUid() {
