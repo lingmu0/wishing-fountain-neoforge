@@ -23,8 +23,8 @@ import java.util.List;
 
 public class WFMultiBlock implements IMultiBlock {
 
-    private static final ResourceLocation WISHING_FOUNTAIN_TARGET = ResourceLocation.parse(WishingFountain.MODID + ":wishing_fountain_target");
-    private static final ResourceLocation WISHING_FOUNTAIN_STRUCTURE = ResourceLocation.parse(WishingFountain.MODID + ":wishing_fountain_structure");
+    private static final ResourceLocation WISHING_FOUNTAIN_TARGET = new ResourceLocation(WishingFountain.MODID + ":wishing_fountain_target");
+    private static final ResourceLocation WISHING_FOUNTAIN_STRUCTURE = new ResourceLocation(WishingFountain.MODID + ":wishing_fountain_structure");
 
     //喷泉中心相对于初始位置的坐标
     private static final BlockPos CENTER = new BlockPos(2, 2 ,2);
@@ -47,7 +47,7 @@ public class WFMultiBlock implements IMultiBlock {
 
     @Override
     public boolean isMatch(Level world, BlockPos posStart, StructureTemplate target) {
-        StructureTemplate.Palette palette = target.palettes.get(0);
+        StructureTemplate.Palette palette = ((io.github.poisonsheep.wishingfountain.mixin.StructureTemplateAccessor) (Object) target).wishingFountain$getPalettes().get(0);
         for (StructureTemplate.StructureBlockInfo blockInfo : palette.blocks()) {
             BlockState worldState = world.getBlockState(posStart.offset(blockInfo.pos()));
             BlockState infoState = blockInfo.state();
@@ -60,7 +60,7 @@ public class WFMultiBlock implements IMultiBlock {
 
     @Override
     public void build(Level worldIn, BlockPos posStart, StructureTemplate wishingFountain, Direction direction) {
-        StructureTemplate.Palette palette = wishingFountain.palettes.get(0);
+        StructureTemplate.Palette palette = ((io.github.poisonsheep.wishingfountain.mixin.StructureTemplateAccessor) (Object) wishingFountain).wishingFountain$getPalettes().get(0);
         PosListData posList = new PosListData();
         BlockPos center = posStart.offset(CENTER);
         //记录之前方块的位置

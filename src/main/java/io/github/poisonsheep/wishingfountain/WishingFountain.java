@@ -3,58 +3,38 @@ package io.github.poisonsheep.wishingfountain;
 import io.github.poisonsheep.wishingfountain.block.multiblock.MultiBlockManager;
 import io.github.poisonsheep.wishingfountain.command.WishingFountainCommand;
 import io.github.poisonsheep.wishingfountain.config.CommonConfigs;
-import io.github.poisonsheep.wishingfountain.event.ForgeEvent;
-import io.github.poisonsheep.wishingfountain.loot.ModGlobalLootModifiers;
+import io.github.poisonsheep.wishingfountain.event.PlayerEvents;
+import io.github.poisonsheep.wishingfountain.loot.FountainLoot;
 import io.github.poisonsheep.wishingfountain.registry.*;
-import net.minecraftforge.common.MinecraftForge;
-import net.minecraftforge.event.RegisterCommandsEvent;
-import net.minecraftforge.event.server.ServerStartingEvent;
-import net.minecraftforge.eventbus.api.IEventBus;
-import net.minecraftforge.eventbus.api.SubscribeEvent;
-import net.minecraftforge.fml.ModLoadingContext;
-import net.minecraftforge.fml.common.Mod;
-import net.minecraftforge.fml.config.ModConfig;
-import net.minecraftforge.fml.event.lifecycle.FMLCommonSetupEvent;
-import net.minecraftforge.fml.event.lifecycle.InterModEnqueueEvent;
-import net.minecraftforge.fml.event.lifecycle.InterModProcessEvent;
-import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
+import net.fabricmc.api.ModInitializer;
+import net.fabricmc.fabric.api.command.v2.CommandRegistrationCallback;
+import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents;
+import net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents;
+import net.minecraft.resources.ResourceLocation;
 
-@Mod(WishingFountain.MODID)
-public class WishingFountain {
-    public static final IEventBus modBusEvent = FMLJavaModLoadingContext.get().getModEventBus();
+public final class WishingFountain implements ModInitializer {
+    public static final String MODID = "wishing_fountain";
 
-    public final static String MODID = "wishing_fountain";
-
-    public WishingFountain(){
-        MinecraftForge.EVENT_BUS.register(new ForgeEvent());
-        modBusEvent.addListener(this::setup);
-        modBusEvent.addListener(this::enqueueIMC);
-        modBusEvent.addListener(this::processIMC);
-        MinecraftForge.EVENT_BUS.register(this);
-        ModLoadingContext.get().registerConfig(ModConfig.Type.COMMON, CommonConfigs.SPEC,  MODID + ".toml");
-        ItemRegistry.ITEMS.register(modBusEvent);
-        BlockRegistry.BLOCKS.register(modBusEvent);
-        BlockEntityRegistry.BLOCK_ENTITY.register(modBusEvent);
-        SoundRegistry.SOUNDS.register(modBusEvent);
-        RecipeRegistry.DEF_REG.register(modBusEvent);
-        TabRegistry.TABS.register(modBusEvent);
-        ModGlobalLootModifiers.GLM.register(modBusEvent);
-    }
-    private void setup(final FMLCommonSetupEvent event) {
+    @Override
+    public void onInitialize() {
+        CommonConfigs.load();
+        BlockRegistry.init();
+        ItemRegistry.init();
+        BlockEntityRegistry.init();
+        SoundRegistry.init();
+        RecipeRegistry.init();
         AdvancementTriggerRegistry.register();
+        TabRegistry.init();
+        FountainLoot.register();
+        ServerLifecycleEvents.SERVER_STARTING.register(server -> MultiBlockManager.init());
+        ServerTickEvents.END_SERVER_TICK.register(server ->
+                server.getPlayerList().getPlayers().forEach(PlayerEvents::onPlayerTick));
+        CommandRegistrationCallback.EVENT.register((dispatcher, registries, environment) ->
+                WishingFountainCommand.register(dispatcher));
+
     }
 
-    private void enqueueIMC(final InterModEnqueueEvent event) {}
-
-    private void processIMC(final InterModProcessEvent event) {}
-
-    @SubscribeEvent
-    public void onServerStarting(ServerStartingEvent event) {
-        MultiBlockManager.init();
-    }
-
-    @SubscribeEvent
-    public void onRegisterCommands(RegisterCommandsEvent event) {
-        WishingFountainCommand.register(event.getDispatcher());
+    public static ResourceLocation id(String path) {
+        return new ResourceLocation(MODID, path);
     }
 }

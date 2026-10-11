@@ -21,8 +21,8 @@ import net.minecraft.world.item.crafting.Recipe;
 import net.minecraft.world.item.crafting.RecipeSerializer;
 import net.minecraft.world.item.crafting.RecipeType;
 import net.minecraft.world.level.Level;
-import net.minecraftforge.common.util.RecipeMatcher;
-import net.minecraftforge.registries.ForgeRegistries;
+
+import net.minecraft.core.registries.BuiltInRegistries;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -35,6 +35,9 @@ public class WFRecipe implements Recipe<WFRecipeInventory> {
 
     public WFRecipe(ResourceLocation id, String wishType, String target, NonNullList<Ingredient> ingredients) {
         this.id = id;
+        if (ingredients.isEmpty() || ingredients.size() > 8) {
+            throw new IllegalArgumentException("Fountain recipes require 1-8 ingredients");
+        }
         this.wishType = wishType;
         this.target = target;
         this.ingredients = ingredients;
@@ -69,7 +72,7 @@ public class WFRecipe implements Recipe<WFRecipeInventory> {
 
     @Override
     public boolean matches(WFRecipeInventory inv, Level worldIn) {
-        List<ItemStack> inputs = new ArrayList();
+        List<ItemStack> inputs = new ArrayList<>();
         int i = 0;
         for(int j = 0; j < inv.getContainerSize(); ++j) {
             ItemStack itemstack = inv.getItem(j);
@@ -78,18 +81,19 @@ public class WFRecipe implements Recipe<WFRecipeInventory> {
                 inputs.add(itemstack);
             }
         }
-        boolean var10000;
-        label43: {
-            if (i == this.ingredients.size()) {
-                if (RecipeMatcher.findMatches(inputs, this.ingredients) != null) {
-                    break label43;
-                }
+        return i == ingredients.size() && matchesIngredients(inputs, 0, new boolean[inputs.size()]);
+    }
+
+    private boolean matchesIngredients(List<ItemStack> inputs, int index, boolean[] used) {
+        if (index == ingredients.size()) return true;
+        for (int i = 0; i < inputs.size(); i++) {
+            if (!used[i] && ingredients.get(index).test(inputs.get(i))) {
+                used[i] = true;
+                if (matchesIngredients(inputs, index + 1, used)) return true;
+                used[i] = false;
             }
-            var10000 = false;
-            return var10000;
         }
-        var10000 = true;
-        return var10000;
+        return false;
     }
 
     @Override
@@ -118,7 +122,7 @@ public class WFRecipe implements Recipe<WFRecipeInventory> {
         } else if(wishType.equals("item")) {
             ResourceLocation itemId = ResourceLocation.tryParse(target);
             if (itemId != null) {
-                Item item = ForgeRegistries.ITEMS.getValue(itemId);
+                Item item = BuiltInRegistries.ITEM.getOptional(itemId).orElse(null);
                 if (item != null) {
                     return new ItemStack(item);
                 }
@@ -145,7 +149,7 @@ public class WFRecipe implements Recipe<WFRecipeInventory> {
 
     @Override
     public RecipeType<?> getType() {
-        return RecipeRegistry.WF_RECIPE_TYPE;
+        return RecipeRegistry.WF_RECIPE_TYPE.get();
     }
 
     public String getMapType() {

@@ -35,7 +35,7 @@ import net.minecraft.world.level.material.Fluids;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.VoxelShape;
-import net.minecraftforge.items.ItemHandlerHelper;
+import io.github.poisonsheep.wishingfountain.util.PlayerItems;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.*;
@@ -81,14 +81,15 @@ public class WFBlock extends BaseEntityBlock implements SimpleWaterloggedBlock {
     }
 
     private InteractionResult takeOutItem(Level worldIn, WFEntity wishingFountain, Player player) {
+        if (worldIn.isClientSide()) return InteractionResult.SUCCESS;
         ItemStack stack = wishingFountain.handler.getStackInSlot(0);
         if(!stack.isEmpty()) {
             if (player.isShiftKeyDown()) {
                 ItemStack extractItem = wishingFountain.handler.extractItem(0, stack.getCount(), false);
-                ItemHandlerHelper.giveItemToPlayer(player, extractItem);
+                PlayerItems.giveItemToPlayer(player, extractItem);
             } else {
                 ItemStack extractItem = wishingFountain.handler.extractItem(0, 1, false);
-                ItemHandlerHelper.giveItemToPlayer(player, extractItem);
+                PlayerItems.giveItemToPlayer(player, extractItem);
             }
             craft(worldIn, wishingFountain, player);
             wishingFountain.refresh();
@@ -98,11 +99,13 @@ public class WFBlock extends BaseEntityBlock implements SimpleWaterloggedBlock {
     }
 
     private InteractionResult takeInItem(Level worldIn, WFEntity wishingFountain, Player playerIn) {
+        if (worldIn.isClientSide()) return InteractionResult.SUCCESS;
         ItemStack playerItem = playerIn.getMainHandItem();
         ItemStack stack = wishingFountain.handler.getStackInSlot(0);
         if ((stack.isEmpty() || stack.getItem().equals(playerItem.getItem())) && stack.getCount() < 8 && stack.getCount() < playerItem.getMaxStackSize()) {
-            ItemStack singleItemStack = playerItem.split(1);
-            wishingFountain.handler.insertItem(0, singleItemStack, false);
+            ItemStack singleItemStack = playerItem.copyWithCount(1);
+            if (!wishingFountain.handler.insertItem(0, singleItemStack, false).isEmpty()) return InteractionResult.FAIL;
+            playerItem.shrink(1);
             craft(worldIn, wishingFountain, playerIn);
             wishingFountain.refresh();
             return InteractionResult.sidedSuccess(worldIn.isClientSide);
@@ -126,13 +129,9 @@ public class WFBlock extends BaseEntityBlock implements SimpleWaterloggedBlock {
 
     @Override
     public void onRemove(BlockState state, Level worldIn, BlockPos pos, BlockState newState, boolean isMoving) {
-        if (!worldIn.isClientSide) {
-            this.getEntity(worldIn, pos).ifPresent(altar -> {
-                ItemStack stack = altar.handler.getStackInSlot(0);
-                if (!stack.isEmpty()) {
-                    Block.popResource(worldIn, pos.offset(0, 1, 0), stack);
-                }
-            });
+        if (!worldIn.isClientSide() && state.getBlock() != newState.getBlock()) {
+            getEntity(worldIn, pos).ifPresent(entity ->
+                    io.github.poisonsheep.wishingfountain.util.FountainRestoration.remove(worldIn, pos, entity));
         }
         super.onRemove(state, worldIn, pos, newState, isMoving);
     }
@@ -152,21 +151,9 @@ public class WFBlock extends BaseEntityBlock implements SimpleWaterloggedBlock {
         super.playerWillDestroy(worldIn, pos, state, player);
     }
 
-    @Override
-    public void onBlockExploded(BlockState state, Level worldIn, BlockPos pos, Explosion explosion) {
-        if (!worldIn.isClientSide) {
-            this.getEntity(worldIn, pos).ifPresent(altar -> this.restoreStorageBlock(worldIn, pos, altar.getBlockPosList()));
-        }
-        super.onBlockExploded(state, worldIn, pos, explosion);
-    }
 
     private void restoreStorageBlock(Level worldIn, BlockPos currentPos, PosListData posList) {
-        for (BlockPos storagePos : posList.getData()) {
-            if (storagePos.equals(currentPos)) {
-                continue;
-            }
-            this.getEntity(worldIn, storagePos).ifPresent(entity -> worldIn.setBlock(storagePos, entity.getStorageState(), Block.UPDATE_ALL));
-        }
+        io.github.poisonsheep.wishingfountain.util.FountainRestoration.restore(worldIn, currentPos, posList);
     }
 
     //在喷泉里有物品实体将持续调用
@@ -188,7 +175,7 @@ public class WFBlock extends BaseEntityBlock implements SimpleWaterloggedBlock {
                 }
             }
         }
-        Optional<WFRecipe> optionalRecipe = worldIn.getRecipeManager().getAllRecipesFor(RecipeRegistry.WF_RECIPE_TYPE).stream().filter(r -> r.matches(inv, worldIn)).findFirst();
+        Optional<WFRecipe> optionalRecipe = worldIn.getRecipeManager().getAllRecipesFor(RecipeRegistry.WF_RECIPE_TYPE.get()).stream().filter(r -> r.matches(inv, worldIn)).findFirst();
         optionalRecipe.ifPresent(r -> r.spawnOutputEntity(worldIn, player.getOnPos()));
         optionalRecipe.ifPresent(r -> removeIngredients(worldIn, inv, posList));
     }

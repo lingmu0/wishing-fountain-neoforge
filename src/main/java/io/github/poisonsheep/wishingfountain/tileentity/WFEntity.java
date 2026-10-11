@@ -17,12 +17,9 @@ import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.AABB;
-import net.minecraftforge.api.distmarker.Dist;
-import net.minecraftforge.api.distmarker.OnlyIn;
-import net.minecraftforge.items.ItemStackHandler;
 import org.jetbrains.annotations.NotNull;
 
-import javax.annotation.Nullable;
+import org.jetbrains.annotations.Nullable;
 
 public class WFEntity extends BlockEntity {
 
@@ -40,7 +37,7 @@ public class WFEntity extends BlockEntity {
     private Direction direction = Direction.SOUTH;
     private boolean canPlaceItem = false;
     private int textureIndex = 0;
-    public final ItemStackHandler handler = new ItemStackHandler(1);
+    public final io.github.poisonsheep.wishingfountain.inventory.FountainItemStorage handler = new io.github.poisonsheep.wishingfountain.inventory.FountainItemStorage(1);
 
     public WFEntity(BlockPos pos, BlockState state) {
         super(TYPE, pos, state);
@@ -67,37 +64,35 @@ public class WFEntity extends BlockEntity {
         ItemStack outside = entity.getItem().copy();
         ItemStack inside = this.getStorageItem();
         if((inside.isEmpty() || inside.getItem().equals(outside.getItem())) && inside.getCount() < 8 && inside.getCount() < outside.getMaxStackSize()) {
-            ItemStack singleItemStack = outside.split(1);
-            this.handler.insertItem(0, singleItemStack, false);
+            ItemStack singleItemStack = outside.copyWithCount(1);
+            if (handler.insertItem(0, singleItemStack, false).isEmpty()) outside.shrink(1);
         }
         entity.setItem(outside);
     }
 
     @Override
-    public void saveAdditional(CompoundTag compound) {
-        getPersistentData().putBoolean(IS_RENDER, isRender);
-        getPersistentData().putBoolean(CAN_PLACE_ITEM, canPlaceItem);
-        getPersistentData().putInt(STORAGE_STATE_ID, Block.getId(storageState));
-        getPersistentData().putInt(TEXTURE_INDEX, textureIndex);
-        getPersistentData().putString(DIRECTION, direction.getSerializedName());
-        getPersistentData().put(STORAGE_BLOCK_LIST, blockPosList.serialize());
-        getPersistentData().put(STORAGE_ITEM, handler.serializeNBT());
+    protected void saveAdditional(CompoundTag compound) {
+        compound.putBoolean(IS_RENDER, isRender);
+        compound.putBoolean(CAN_PLACE_ITEM, canPlaceItem);
+        compound.putInt(STORAGE_STATE_ID, Block.getId(storageState));
+        compound.putInt(TEXTURE_INDEX, textureIndex);
+        compound.putString(DIRECTION, direction.getSerializedName());
+        compound.put(STORAGE_BLOCK_LIST, blockPosList.serialize());
+        compound.put(STORAGE_ITEM, handler.serializeNBT());
         super.saveAdditional(compound);
     }
 
     @Override
     public void load(CompoundTag nbt) {
         super.load(nbt);
-        isRender = getPersistentData().getBoolean(IS_RENDER);
-        canPlaceItem = getPersistentData().getBoolean(CAN_PLACE_ITEM);
-        storageState = Block.stateById(getPersistentData().getInt(STORAGE_STATE_ID));
-        textureIndex = getPersistentData().getInt(TEXTURE_INDEX);
-        direction = Direction.byName(getPersistentData().getString(DIRECTION));
-        if (direction == null) {
-            direction = Direction.SOUTH;
-        }
-        blockPosList.deserialize(getPersistentData().getList(STORAGE_BLOCK_LIST, Tag.TAG_COMPOUND));
-        handler.deserializeNBT(getPersistentData().getCompound(STORAGE_ITEM));
+        isRender = nbt.getBoolean(IS_RENDER);
+        canPlaceItem = nbt.getBoolean(CAN_PLACE_ITEM);
+        storageState = Block.stateById(nbt.getInt(STORAGE_STATE_ID));
+        textureIndex = nbt.getInt(TEXTURE_INDEX);
+        direction = Direction.byName(nbt.getString(DIRECTION));
+        if (direction == null) direction = Direction.SOUTH;
+        blockPosList.deserialize(nbt.getList(STORAGE_BLOCK_LIST, Tag.TAG_COMPOUND));
+        handler.deserializeNBT(nbt.getCompound(STORAGE_ITEM));
     }
 
     public ItemStack getStorageItem() {
@@ -128,11 +123,6 @@ public class WFEntity extends BlockEntity {
         refresh();
     }
 
-    @Override
-    @OnlyIn(Dist.CLIENT)
-    public AABB getRenderBoundingBox() {
-        return new AABB(worldPosition.offset(-3, -2, -3), worldPosition.offset(3, 2, 3));
-    }
 
     @NotNull
     @Override

@@ -51,13 +51,13 @@ public class WFRender implements BlockEntityRenderer<WFEntity> {
             this.setTranslateAndPose(entity, poseStack);
             poseStack.mulPose(Axis.ZN.rotationDegrees(180));
             if(entity.getTextureIndex() == 1) {
-                VertexConsumer buffer = source.getBuffer(RenderType.entityTranslucent(MONOKUMA_TEXTURE));
+                VertexConsumer buffer = source.getBuffer(RenderType.entityCutoutNoCull(MONOKUMA_TEXTURE));
                 MONOKUMA_MODEL.renderToBuffer(poseStack, buffer, combinedLightIn, combinedOverlayIn, 1.0F, 1.0F, 1.0F, 1.0F);
             } else if(entity.getTextureIndex() == 2) {
-                VertexConsumer buffer = source.getBuffer(RenderType.entityTranslucent(NEP_TEXTURE));
+                VertexConsumer buffer = source.getBuffer(RenderType.entityCutoutNoCull(NEP_TEXTURE));
                 NEP_MODEL.renderToBuffer(poseStack, buffer, combinedLightIn, combinedOverlayIn, 1.0F, 1.0F, 1.0F, 1.0F);
             } else {
-                VertexConsumer buffer = source.getBuffer(RenderType.entityTranslucent(DEFAULT_TEXTURE));
+                VertexConsumer buffer = source.getBuffer(RenderType.entityCutoutNoCull(DEFAULT_TEXTURE));
                 DEFAULT_MODEL.renderToBuffer(poseStack, buffer, combinedLightIn, combinedOverlayIn, 1.0F, 1.0F, 1.0F, 1.0F);
             }
             poseStack.popPose();

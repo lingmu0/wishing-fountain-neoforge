@@ -25,6 +25,7 @@ public class WFRecipeSerializer implements RecipeSerializer<WFRecipe> {
         String type = buf.readUtf();
         String target = buf.readUtf();
         int i = buf.readVarInt();
+        if (i < 1 || i > 8) throw new IllegalArgumentException("Fountain recipes require 1-8 ingredients");
         NonNullList<Ingredient> ingredients = NonNullList.withSize(i, Ingredient.EMPTY);
         ingredients.replaceAll(ignored -> Ingredient.fromNetwork(buf));
         return new WFRecipe(id,type, target, ingredients);
@@ -43,7 +44,7 @@ public class WFRecipeSerializer implements RecipeSerializer<WFRecipe> {
     private static NonNullList<Ingredient> itemsFromJson(JsonArray p_44276_) {
         NonNullList<Ingredient> nonnulllist = NonNullList.create();
         for(int i = 0; i < p_44276_.size(); ++i) {
-            Ingredient ingredient = Ingredient.fromJson(p_44276_.get(i), false);
+            Ingredient ingredient = Ingredient.fromJson(p_44276_.get(i));
             nonnulllist.add(ingredient);
         }
         return nonnulllist;

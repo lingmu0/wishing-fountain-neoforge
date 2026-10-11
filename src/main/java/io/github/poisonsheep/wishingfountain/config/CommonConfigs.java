@@ -1,33 +1,44 @@
 package io.github.poisonsheep.wishingfountain.config;
 
-import net.minecraftforge.common.ForgeConfigSpec;
+import net.fabricmc.loader.api.FabricLoader;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.util.Properties;
+import java.util.function.Supplier;
 
-public class CommonConfigs {
-    public static final ForgeConfigSpec.Builder BUILDER = new ForgeConfigSpec.Builder();
+public final class CommonConfigs {
+    private static final Logger LOGGER = LoggerFactory.getLogger("wishing_fountain");
+    private static final Properties VALUES = new Properties();
+    public static final Supplier<String> TRIGGER_ITEM = () -> VALUES.getProperty("trigger_item", "minecraft:heart_of_the_sea");
+    public static final Supplier<String> REQUIRED_BLUEPRINT = () -> VALUES.getProperty("required_blueprint", "butdaysblueprint:blueprint/residual_chapter_of_atlantis");
+    private static int searchingRadius = 10000;
+    public static final Supplier<Integer> SEARCHING_RADIUS = () -> searchingRadius;
 
-    public static final ForgeConfigSpec SPEC;
-
-    public static final ForgeConfigSpec.ConfigValue<Integer> SEARCHING_RADIUS;
-
-    public static final ForgeConfigSpec.ConfigValue<String> TRIGGER_ITEM;
-
-    public static final ForgeConfigSpec.ConfigValue<String> REQUIRED_BLUEPRINT;
-
-    static {
-        BUILDER.push("Wishing Fountain Configs");
-        TRIGGER_ITEM = BUILDER
-                .comment("Transforms multi-block structure items. DEFAULT: minecraft:heart_of_the_sea")
-                .define("trigger item", "minecraft:heart_of_the_sea");
-        REQUIRED_BLUEPRINT = BUILDER
-                .comment("Blueprint required to build the fountain (requires Butday's Blueprint mod). Leave empty to disable. DEFAULT: butdaysblueprint:blueprint/residual_chapter_of_atlantis")
-                .define("required blueprint", "butdaysblueprint:blueprint/residual_chapter_of_atlantis");
-        BUILDER.pop();
-
-        BUILDER.push("Buddelschiff Configs");
-        SEARCHING_RADIUS = BUILDER
-                .comment("Maximum radius of buddelschiff search. DEFAULT: 10000")
-                .define("searching radius",10000);
-        BUILDER.pop();
-        SPEC = BUILDER.build();
+    public static void load() {
+        Path path = FabricLoader.getInstance().getConfigDir().resolve("wishing_fountain.properties");
+        VALUES.setProperty("trigger_item", "minecraft:heart_of_the_sea");
+        VALUES.setProperty("required_blueprint", "butdaysblueprint:blueprint/residual_chapter_of_atlantis");
+        VALUES.setProperty("searching_radius", "10000");
+        try {
+            if (Files.exists(path)) {
+                try (var reader = Files.newBufferedReader(path)) { VALUES.load(reader); }
+            } else {
+                Files.createDirectories(path.getParent());
+                try (var writer = Files.newBufferedWriter(path)) {
+                    VALUES.store(writer, "Wishing Fountain: trigger item, optional Butday's Blueprint requirement (empty disables), maximum map search radius");
+                }
+            }
+            searchingRadius = Integer.parseInt(VALUES.getProperty("searching_radius").trim());
+            if (searchingRadius < 1 || searchingRadius > 30000000) {
+                searchingRadius = 10000;
+                LOGGER.warn("Invalid searching_radius; using 10000");
+            }
+        } catch (IOException | NumberFormatException e) {
+            LOGGER.warn("Could not read Wishing Fountain config; using default search radius", e);
+            searchingRadius = 10000;
+        }
     }
 }

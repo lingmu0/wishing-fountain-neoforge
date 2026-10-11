@@ -13,8 +13,8 @@ public class AdvancementTriggerRegistry {
     }
 
     public static void register() {
-        CriteriaTriggers.register(SET_SAIL);
-        CriteriaTriggers.register(DESPAIR_DISEASE);
-        CriteriaTriggers.register(DIMENSION_TRIPPER);
+        io.github.poisonsheep.wishingfountain.mixin.CriteriaTriggersInvoker.wishingFountain$register(SET_SAIL);
+        io.github.poisonsheep.wishingfountain.mixin.CriteriaTriggersInvoker.wishingFountain$register(DESPAIR_DISEASE);
+        io.github.poisonsheep.wishingfountain.mixin.CriteriaTriggersInvoker.wishingFountain$register(DIMENSION_TRIPPER);
     }
 }

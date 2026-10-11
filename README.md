@@ -1,3 +1,37 @@
+# Wishing Fountain Port
+
+Unofficial ports of the MIT-licensed [Wishing Fountain](https://www.curseforge.com/minecraft/mc-mods/wishing-fountain) by poisonsheep and shinobunoinu. Original sources: [poisonsheep/Wishing-Fountain](https://github.com/poisonsheep/Wishing-Fountain). Original credits and license are preserved in `CREDITS.txt` and `LICENSE.txt`.
+
+| Branch | Minecraft | Loader | Java runtime |
+|---|---|---|---|
+| `fabric-1.20.1` | 1.20.1 | Fabric | 17+ |
+| `fabric-1.21.1` | 1.21.1 | Fabric | 21+ |
+| `fabric-26.1.2` | 26.1.2 | Fabric | 25+ |
+| `neoforge-1.21.1` | 1.21.1 | NeoForge | 21+ |
+| `neoforge-26.1.2` | 26.1.2 | NeoForge | 25+ |
+
+## Fabric installation
+
+Install Fabric Loader and Fabric API for the exact Minecraft version, then place the matching Wishing Fountain JAR in `mods/` on both the client and server. JEI is optional and displays the custom wishing recipes, including recipes supplied by data packs.
+
+Fabric configuration is stored in `config/wishing_fountain.properties`. The keys are `trigger_item`, `required_blueprint`, and `searching_radius`. Restart the game or server after editing. The blueprint setting is only relevant when the optional Blueprint integration is available.
+
+## Build
+
+Use JDK 21 to run Gradle for the 1.20.1 and 1.21.1 branches, and JDK 25 for 26.1.2. The 1.20.1 branch also requires a Java 17 toolchain. Run `./gradlew build` (Windows: `gradlew.bat build`). Install the main JAR from `build/libs/`, excluding `-sources.jar` and files under `build/devlibs/`.
+
+All Fabric branches use Fabric Loom. The 1.20.1 and 1.21.1 artifacts are remapped for production; 26.1.2 uses Minecraft's unobfuscated names.
+
+## Data pack compatibility
+
+Minecraft 1.20.1 uses `data/<namespace>/recipes/`; 1.21.1 and 26.1.2 use `data/<namespace>/recipe/`. In 1.20.1 and 1.21.1, ingredients use objects such as `{ "item": "minecraft:diamond" }` or `{ "tag": "minecraft:planks" }`. In 26.1.2, use `"minecraft:diamond"` or `"#minecraft:planks"` instead. Each recipe needs between one and eight ingredients.
+
+## Validation
+
+Release checks compile and package each version and inspect metadata, mixin entries, recipes, models, textures, and production JAR contents. Minecraft is not launched as part of these checks. After building, run `python tools/check-release.py build/libs/wishing_fountain-1.20.1-fabric-1.2.2.jar 1.20.1` to inspect the release JAR.
+
+---
+
 # Wishing Fountain Mod
 
 This mod adds a multiblock structure and two key items (Buddelschiff) that allow players to obtain location maps (for biomes or structures), directly acquire specific items, or change weather conditions through wishing.
@@ -54,30 +88,30 @@ Wishing Fountain recipes support up to 8 input items and output:
 ### Structure Example
 
 ```json
-{  
-  "type": "wishing_fountain:wishing_fountain_recipe",  
-  "wish_type": "structure",  
-  "target": "minecraft:desert_pyramid",  
-  "ingredients": [  
-    { "item": "minecraft:sandstone" },  
-    { "item": "minecraft:gold_ingot" },  
-    { "item": "minecraft:emerald" }  
-  ]  
+{
+  "type": "wishing_fountain:wishing_fountain_recipe",
+  "wish_type": "structure",
+  "target": "minecraft:desert_pyramid",
+  "ingredients": [
+    { "item": "minecraft:sandstone" },
+    { "item": "minecraft:gold_ingot" },
+    { "item": "minecraft:emerald" }
+  ]
 }
 ```
 
 ### Item Example
 
 ```json
-{  
-  "type": "wishing_fountain:wishing_fountain_recipe",  
-  "wish_type": "item",  
-  "target": "minecraft:coal",  
-  "ingredients": [  
-    { "item": "minecraft:diamond" },  
-    { "item": "minecraft:gold_ingot" },  
-    { "item": "minecraft:emerald" }  
-  ]  
+{
+  "type": "wishing_fountain:wishing_fountain_recipe",
+  "wish_type": "item",
+  "target": "minecraft:coal",
+  "ingredients": [
+    { "item": "minecraft:diamond" },
+    { "item": "minecraft:gold_ingot" },
+    { "item": "minecraft:emerald" }
+  ]
 }
 ```
 
