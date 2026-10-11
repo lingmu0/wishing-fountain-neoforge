@@ -1,0 +1,11 @@
+{
+  "required": true,
+  "package": "io.github.poisonsheep.wishingfountain.mixin",
+  "compatibilityLevel": "JAVA_25",
+  "mixins": [
+    "StructureTemplateAccessor"
+  ],
+  "injectors": {
+    "defaultRequire": 1
+  }
+}

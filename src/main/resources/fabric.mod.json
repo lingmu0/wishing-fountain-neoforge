@@ -1,0 +1,43 @@
+{
+  "schemaVersion": 1,
+  "id": "wishing_fountain",
+  "version": "${version}",
+  "name": "Wishing Fountain",
+  "description": "An immersive multiblock fountain for wishing, biome and structure maps, items, and weather.",
+  "authors": [
+    "poisonsheep",
+    "shinobunoinu",
+    "Lingmu (Fabric port)"
+  ],
+  "contact": {
+    "homepage": "https://www.curseforge.com/minecraft/mc-mods/wishing-fountain-port",
+    "sources": "https://github.com/lingmu0/wishing-fountain-neoforge",
+    "issues": "https://github.com/lingmu0/wishing-fountain-neoforge/issues"
+  },
+  "license": "MIT",
+  "icon": "assets/wishing_fountain/textures/gui/wishing_fountain_icon.png",
+  "environment": "*",
+  "entrypoints": {
+    "main": [
+      "io.github.poisonsheep.wishingfountain.WishingFountain"
+    ],
+    "client": [
+      "io.github.poisonsheep.wishingfountain.client.WishingFountainClient"
+    ],
+    "jei_mod_plugin": [
+      "io.github.poisonsheep.wishingfountain.compat.jei.JeiPlugin"
+    ]
+  },
+  "mixins": [
+    "wishing_fountain.mixins.json"
+  ],
+  "depends": {
+    "fabricloader": ">=0.18.4",
+    "minecraft": "26.1.2",
+    "java": ">=25",
+    "fabric-api": "*"
+  },
+  "suggests": {
+    "jei": "*"
+  }
+}

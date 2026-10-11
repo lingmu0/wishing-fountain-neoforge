@@ -201,7 +201,7 @@ public class WFBiomeMapItem extends WFMapItem {
         }
         return null;
     }
-    
+
     public static void searchBiomeAsync(ServerLevel worldIn, BlockPos startPos, Identifier targetBiome, Consumer<MapSearchResult> callback) {
         EXECUTORS.submit(() -> {
             try {

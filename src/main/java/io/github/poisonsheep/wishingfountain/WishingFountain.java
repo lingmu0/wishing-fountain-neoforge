@@ -3,55 +3,38 @@ package io.github.poisonsheep.wishingfountain;
 import io.github.poisonsheep.wishingfountain.block.multiblock.MultiBlockManager;
 import io.github.poisonsheep.wishingfountain.command.WishingFountainCommand;
 import io.github.poisonsheep.wishingfountain.config.CommonConfigs;
-import io.github.poisonsheep.wishingfountain.event.ForgeEvent;
-import io.github.poisonsheep.wishingfountain.loot.ModGlobalLootModifiers;
+import io.github.poisonsheep.wishingfountain.event.PlayerEvents;
+import io.github.poisonsheep.wishingfountain.loot.FountainLoot;
 import io.github.poisonsheep.wishingfountain.registry.*;
+import net.fabricmc.api.ModInitializer;
+import net.fabricmc.fabric.api.command.v2.CommandRegistrationCallback;
+import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents;
+import net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents;
 import net.minecraft.resources.Identifier;
-import net.neoforged.neoforge.common.NeoForge;
-import net.neoforged.neoforge.event.RegisterCommandsEvent;
-import net.neoforged.neoforge.event.server.ServerStartingEvent;
-import net.neoforged.neoforge.event.OnDatapackSyncEvent;
-import net.neoforged.bus.api.IEventBus;
-import net.neoforged.bus.api.SubscribeEvent;
-import net.neoforged.fml.ModLoadingContext;
-import net.neoforged.fml.common.Mod;
-import net.neoforged.fml.config.ModConfig;
 
-@Mod(WishingFountain.MODID)
-public class WishingFountain {
-    public final static String MODID = "wishing_fountain";
+public final class WishingFountain implements ModInitializer {
+    public static final String MODID = "wishing_fountain";
 
-    public WishingFountain(IEventBus modBus){
-        NeoForge.EVENT_BUS.register(new ForgeEvent());
-        modBus.addListener(AdvancementTriggerRegistry::register);
-        NeoForge.EVENT_BUS.register(this);
-        ModLoadingContext.get().getActiveContainer().registerConfig(ModConfig.Type.COMMON, CommonConfigs.SPEC, MODID + ".toml");
-        ItemRegistry.ITEMS.register(modBus);
-        BlockRegistry.BLOCKS.register(modBus);
-        BlockEntityRegistry.BLOCK_ENTITY.register(modBus);
-        SoundRegistry.SOUNDS.register(modBus);
-        RecipeRegistry.DEF_REG.register(modBus);
-        RecipeRegistry.TYPES.register(modBus);
-        TabRegistry.TABS.register(modBus);
-        ModGlobalLootModifiers.GLM.register(modBus);
+    @Override
+    public void onInitialize() {
+        CommonConfigs.load();
+        BlockRegistry.init();
+        ItemRegistry.init();
+        BlockEntityRegistry.init();
+        SoundRegistry.init();
+        RecipeRegistry.init();
+        AdvancementTriggerRegistry.register();
+        TabRegistry.init();
+        FountainLoot.register();
+        ServerLifecycleEvents.SERVER_STARTING.register(server -> MultiBlockManager.init());
+        ServerTickEvents.END_SERVER_TICK.register(server ->
+                server.getPlayerList().getPlayers().forEach(PlayerEvents::onPlayerTick));
+        CommandRegistrationCallback.EVENT.register((dispatcher, registries, environment) ->
+                WishingFountainCommand.register(dispatcher));
+        io.github.poisonsheep.wishingfountain.network.RecipeSync.register();
     }
 
     public static Identifier id(String path) {
         return Identifier.fromNamespaceAndPath(MODID, path);
-    }
-
-    @SubscribeEvent
-    public void onServerStarting(ServerStartingEvent event) {
-        MultiBlockManager.init();
-    }
-
-    @SubscribeEvent
-    public void onDatapackSync(OnDatapackSyncEvent event) {
-        event.sendRecipes(RecipeRegistry.WF_RECIPE_TYPE.get());
-    }
-
-    @SubscribeEvent
-    public void onRegisterCommands(RegisterCommandsEvent event) {
-        WishingFountainCommand.register(event.getDispatcher());
     }
 }

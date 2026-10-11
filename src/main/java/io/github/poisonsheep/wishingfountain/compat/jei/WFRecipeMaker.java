@@ -23,6 +23,7 @@ public final class WFRecipeMaker {
     }
 
     public List<WFRecipeWrapper> getAltarRecipes() {
+        if (Minecraft.getInstance().level == null) return List.of();
         List<RecipeHolder<WFRecipe>> wfRecipes = WFClientRecipes.getRecipes();
         var registries = Objects.requireNonNull(Minecraft.getInstance().level).registryAccess();
         List<WFRecipeWrapper> recipes = Lists.newArrayList();

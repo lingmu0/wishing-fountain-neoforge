@@ -18,14 +18,13 @@ import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.storage.ValueInput;
 import net.minecraft.world.level.storage.ValueOutput;
-import net.neoforged.neoforge.items.ItemStackHandler;
 import org.jetbrains.annotations.NotNull;
 
-import javax.annotation.Nullable;
+import org.jetbrains.annotations.Nullable;
 
 public class WFEntity extends BlockEntity {
 
-    public static final BlockEntityType<WFEntity> TYPE = new BlockEntityType<>(WFEntity::new, BlockRegistry.WISHING_FOUNTAIN.get());
+    public static final BlockEntityType<WFEntity> TYPE = net.fabricmc.fabric.api.object.builder.v1.block.entity.FabricBlockEntityTypeBuilder.create(WFEntity::new, BlockRegistry.WISHING_FOUNTAIN.get()).build();
     private static final String STORAGE_ITEM = "StorageItem";
     private static final String STORAGE_STATE_ID = "StorageBlockStateId";
     private static final String STORAGE_BLOCK_LIST = "StorageBlockList";
@@ -39,7 +38,7 @@ public class WFEntity extends BlockEntity {
     private Direction direction = Direction.SOUTH;
     private boolean canPlaceItem = false;
     private int textureIndex = 0;
-    public final ItemStackHandler handler = new ItemStackHandler(1);
+    public final io.github.poisonsheep.wishingfountain.inventory.FountainItemStorage handler = new io.github.poisonsheep.wishingfountain.inventory.FountainItemStorage(1);
 
     public WFEntity(BlockPos pos, BlockState state) {
         super(TYPE, pos, state);
@@ -66,8 +65,8 @@ public class WFEntity extends BlockEntity {
         ItemStack outside = entity.getItem().copy();
         ItemStack inside = this.getStorageItem();
         if((inside.isEmpty() || inside.getItem().equals(outside.getItem())) && inside.getCount() < 8 && inside.getCount() < outside.getMaxStackSize()) {
-            ItemStack singleItemStack = outside.split(1);
-            this.handler.insertItem(0, singleItemStack, false);
+            ItemStack singleItemStack = outside.copyWithCount(1);
+            if (handler.insertItem(0, singleItemStack, false).isEmpty()) outside.shrink(1);
         }
         entity.setItem(outside);
     }
@@ -97,6 +96,14 @@ public class WFEntity extends BlockEntity {
         }
         blockPosList.setData(input.read(STORAGE_BLOCK_LIST, PosListData.CODEC).orElse(java.util.List.of()));
         handler.setStackInSlot(0, input.read(STORAGE_ITEM, ItemStack.CODEC).orElse(ItemStack.EMPTY));
+    }
+
+    @Override
+    public void preRemoveSideEffects(BlockPos pos, BlockState state) {
+        if (level != null && !level.isClientSide()) {
+            io.github.poisonsheep.wishingfountain.util.FountainRestoration.remove(level, pos, this);
+        }
+        super.preRemoveSideEffects(pos, state);
     }
 
     public ItemStack getStorageItem() {
