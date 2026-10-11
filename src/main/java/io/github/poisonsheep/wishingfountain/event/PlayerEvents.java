@@ -19,16 +19,11 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.levelgen.structure.templatesystem.StructureTemplate;
-import net.neoforged.neoforge.event.tick.PlayerTickEvent;
-import net.neoforged.bus.api.SubscribeEvent;
-import net.neoforged.fml.ModList;
 
 import java.util.List;
 
-public class ForgeEvent {
-    @SubscribeEvent
-    public void onPlayerTick(PlayerTickEvent.Post event) {
-        Player player = event.getEntity();
+public final class PlayerEvents {
+    public static void onPlayerTick(Player player) {
         Level worldIn = player.level();
         Direction direction = player.getDirection();
         if (!worldIn.isClientSide) {
@@ -79,7 +74,7 @@ public class ForgeEvent {
 
     /** @return the required blueprint ID, or null if Blueprint mod is not installed or config is empty */
     private static String getRequiredBlueprint() {
-        if (!ModList.get().isLoaded("butdaysblueprint")) {
+        if (!net.fabricmc.loader.api.FabricLoader.getInstance().isModLoaded("butdaysblueprint")) {
             return null;
         }
         String bp = CommonConfigs.REQUIRED_BLUEPRINT.get();

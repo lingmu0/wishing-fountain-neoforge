@@ -21,8 +21,8 @@ public final class WFRecipeMaker {
     private final RecipeManager recipeManager;
 
     private WFRecipeMaker() {
-        ClientLevel world = Objects.requireNonNull(Minecraft.getInstance().level);
-        this.recipeManager = world.getRecipeManager();
+        ClientLevel world = Minecraft.getInstance().level;
+        this.recipeManager = world == null ? null : world.getRecipeManager();
     }
 
     public static WFRecipeMaker getInstance() {
@@ -30,6 +30,7 @@ public final class WFRecipeMaker {
     }
 
     public List<WFRecipeWrapper> getAltarRecipes() {
+        if (recipeManager == null || Minecraft.getInstance().level == null) return List.of();
         List<RecipeHolder<WFRecipe>> wfRecipes = recipeManager.getAllRecipesFor(RecipeRegistry.WF_RECIPE_TYPE.get());
         List<WFRecipeWrapper> recipes = Lists.newArrayList();
         for (RecipeHolder<WFRecipe> holder : wfRecipes) {

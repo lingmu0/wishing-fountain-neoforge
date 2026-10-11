@@ -1,29 +1,20 @@
 package io.github.poisonsheep.wishingfountain.registry;
-
 import io.github.poisonsheep.wishingfountain.WishingFountain;
 import io.github.poisonsheep.wishingfountain.recipe.WFRecipe;
 import io.github.poisonsheep.wishingfountain.recipe.WFRecipeSerializer;
-import net.minecraft.core.registries.Registries;
-import net.minecraft.world.item.crafting.RecipeSerializer;
+import net.minecraft.core.Registry;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.world.item.crafting.RecipeType;
-import net.neoforged.neoforge.registries.DeferredHolder;
-import net.neoforged.neoforge.registries.DeferredRegister;
-
+import net.minecraft.world.item.crafting.RecipeSerializer;
+import java.util.function.Supplier;
 public final class RecipeRegistry {
-    public static final DeferredRegister<RecipeType<?>> TYPES =
-            DeferredRegister.create(Registries.RECIPE_TYPE, WishingFountain.MODID);
-    public static final DeferredHolder<RecipeType<?>, RecipeType<WFRecipe>> WF_RECIPE_TYPE =
-            TYPES.register("wishing_fountain_recipe", () -> new RecipeType<>() {
-                @Override
-                public String toString() {
-                    return WishingFountain.MODID + ":wishing_fountain_recipe";
-                }
+    private static final RecipeType<WFRecipe> TYPE = Registry.register(BuiltInRegistries.RECIPE_TYPE,
+            WishingFountain.id("wishing_fountain_recipe"), new RecipeType<WFRecipe>() {
+                @Override public String toString() { return "wishing_fountain:wishing_fountain_recipe"; }
             });
-
-    public static final DeferredRegister<RecipeSerializer<?>> DEF_REG =
-            DeferredRegister.create(Registries.RECIPE_SERIALIZER, WishingFountain.MODID);
-    public static final DeferredHolder<RecipeSerializer<?>, WFRecipeSerializer> WF_RECIPE_SERIALIZER =
-            DEF_REG.register("wishing_fountain_recipe", WFRecipeSerializer::new);
-
-    private RecipeRegistry() {}
+    public static final Supplier<RecipeType<WFRecipe>> WF_RECIPE_TYPE = () -> TYPE;
+    private static final RecipeSerializer<WFRecipe> SERIALIZER = Registry.register(BuiltInRegistries.RECIPE_SERIALIZER,
+            WishingFountain.id("wishing_fountain_recipe"), new WFRecipeSerializer());
+    public static final Supplier<RecipeSerializer<WFRecipe>> WF_RECIPE_SERIALIZER = () -> SERIALIZER;
+    public static void init() {}
 }

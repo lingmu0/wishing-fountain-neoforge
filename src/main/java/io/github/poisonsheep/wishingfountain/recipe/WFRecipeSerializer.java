@@ -15,7 +15,7 @@ public final class WFRecipeSerializer implements RecipeSerializer<WFRecipe> {
     private static final MapCodec<WFRecipe> CODEC = RecordCodecBuilder.mapCodec(instance -> instance.group(
             Codec.STRING.fieldOf("wish_type").forGetter(WFRecipe::getMapType),
             Codec.STRING.fieldOf("target").forGetter(WFRecipe::getTarget),
-            Ingredient.LIST_CODEC_NONEMPTY.fieldOf("ingredients").forGetter(WFRecipe::getIngredients)
+            Ingredient.CODEC_NONEMPTY.listOf().fieldOf("ingredients").forGetter(WFRecipe::getIngredients)
     ).apply(instance, WFRecipeSerializer::create));
 
     private static final StreamCodec<RegistryFriendlyByteBuf, WFRecipe> STREAM_CODEC = StreamCodec.of(
@@ -31,6 +31,7 @@ public final class WFRecipeSerializer implements RecipeSerializer<WFRecipe> {
                 String wishType = buffer.readUtf();
                 String target = buffer.readUtf();
                 int size = buffer.readVarInt();
+                if (size < 1 || size > 8) throw new IllegalArgumentException("Fountain recipes require 1-8 ingredients");
                 NonNullList<Ingredient> ingredients = NonNullList.withSize(size, Ingredient.EMPTY);
                 for (int i = 0; i < size; i++) {
                     ingredients.set(i, Ingredient.CONTENTS_STREAM_CODEC.decode(buffer));

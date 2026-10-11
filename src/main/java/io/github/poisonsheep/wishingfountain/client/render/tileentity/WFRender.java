@@ -88,12 +88,6 @@ public class WFRender implements BlockEntityRenderer<WFEntity> {
         return true;
     }
 
-    @Override
-    public AABB getRenderBoundingBox(WFEntity entity) {
-        var pos = entity.getBlockPos();
-        return new AABB(pos.getX() - 4, pos.getY() - 3, pos.getZ() - 4,
-                pos.getX() + 5, pos.getY() + 6, pos.getZ() + 5);
-    }
 
     private void setTranslateAndPose(WFEntity entity, PoseStack stack) {
         stack.translate(0.5, -0.5, 0.5);

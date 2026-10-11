@@ -1,31 +1,21 @@
 package io.github.poisonsheep.wishingfountain.registry;
-
 import io.github.poisonsheep.wishingfountain.WishingFountain;
-import net.minecraft.core.registries.Registries;
+import net.fabricmc.fabric.api.itemgroup.v1.FabricItemGroup;
+import net.minecraft.core.Registry;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.network.chat.Component;
-import net.minecraft.world.item.CreativeModeTab;
 import net.minecraft.world.item.ItemStack;
-import net.neoforged.neoforge.event.BuildCreativeModeTabContentsEvent;
-import net.neoforged.bus.api.SubscribeEvent;
-import net.neoforged.fml.common.EventBusSubscriber;
-import net.neoforged.neoforge.registries.DeferredRegister;
-import net.neoforged.neoforge.registries.DeferredHolder;
-
-@EventBusSubscriber(modid = WishingFountain.MODID)
-public class TabRegistry {
-    public static final DeferredRegister<CreativeModeTab> TABS = DeferredRegister.create(Registries.CREATIVE_MODE_TAB, WishingFountain.MODID);
-    public static final DeferredHolder<CreativeModeTab, CreativeModeTab> BLUEPRINT_TAB = TABS.register("wishing_fountain", () -> CreativeModeTab.builder()
-            .icon(() -> new ItemStack(ItemRegistry.WF_STRUCTURE_MAP.get()))
-            .title(Component.translatable("itemGroup.wishing_fountain.main"))
-            .build());
-
-    @SubscribeEvent
-    public static void addCreative(BuildCreativeModeTabContentsEvent event) {
-        if (event.getTab() == TabRegistry.BLUEPRINT_TAB.get()) {
-            event.accept(new ItemStack(ItemRegistry.WF_STRUCTURE_MAP.get()));
-            event.accept(new ItemStack(ItemRegistry.WF_BIOME_MAP.get()));
-            event.accept(new ItemStack(ItemRegistry.MONOKUMA_HARD_DISK.get()));
-            event.accept(new ItemStack(ItemRegistry.NEPS_DECORATION.get()));
-        }
+public final class TabRegistry {
+    public static void init() {
+        Registry.register(BuiltInRegistries.CREATIVE_MODE_TAB, WishingFountain.id("wishing_fountain"),
+                FabricItemGroup.builder()
+                        .icon(() -> new ItemStack(ItemRegistry.WF_STRUCTURE_MAP.get()))
+                        .title(Component.translatable("itemGroup.wishing_fountain.main"))
+                        .displayItems((parameters, output) -> {
+                            output.accept(ItemRegistry.WF_STRUCTURE_MAP.get());
+                            output.accept(ItemRegistry.WF_BIOME_MAP.get());
+                            output.accept(ItemRegistry.MONOKUMA_HARD_DISK.get());
+                            output.accept(ItemRegistry.NEPS_DECORATION.get());
+                        }).build());
     }
 }

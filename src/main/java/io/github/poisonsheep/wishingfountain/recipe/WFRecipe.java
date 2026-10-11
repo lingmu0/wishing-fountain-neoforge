@@ -32,6 +32,9 @@ public class WFRecipe implements Recipe<WFRecipeInventory> {
     private final NonNullList<Ingredient> ingredients;
 
     public WFRecipe(String wishType, String target, NonNullList<Ingredient> ingredients) {
+        if (ingredients.isEmpty() || ingredients.size() > 8) {
+            throw new IllegalArgumentException("Fountain recipes require 1-8 ingredients");
+        }
         this.wishType = wishType;
         this.target = target;
         this.ingredients = ingredients;
@@ -66,7 +69,7 @@ public class WFRecipe implements Recipe<WFRecipeInventory> {
 
     @Override
     public boolean matches(WFRecipeInventory inv, Level worldIn) {
-        List<ItemStack> inputs = new ArrayList();
+        List<ItemStack> inputs = new ArrayList<>();
         int i = 0;
         for(int j = 0; j < inv.getContainerSize(); ++j) {
             ItemStack itemstack = inv.getItem(j);

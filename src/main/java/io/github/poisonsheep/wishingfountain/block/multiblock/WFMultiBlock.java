@@ -47,7 +47,7 @@ public class WFMultiBlock implements IMultiBlock {
 
     @Override
     public boolean isMatch(Level world, BlockPos posStart, StructureTemplate target) {
-        StructureTemplate.Palette palette = target.palettes.get(0);
+        StructureTemplate.Palette palette = ((io.github.poisonsheep.wishingfountain.mixin.StructureTemplateAccessor) (Object) target).wishingFountain$getPalettes().get(0);
         for (StructureTemplate.StructureBlockInfo blockInfo : palette.blocks()) {
             BlockState worldState = world.getBlockState(posStart.offset(blockInfo.pos()));
             BlockState infoState = blockInfo.state();
@@ -60,7 +60,7 @@ public class WFMultiBlock implements IMultiBlock {
 
     @Override
     public void build(Level worldIn, BlockPos posStart, StructureTemplate wishingFountain, Direction direction) {
-        StructureTemplate.Palette palette = wishingFountain.palettes.get(0);
+        StructureTemplate.Palette palette = ((io.github.poisonsheep.wishingfountain.mixin.StructureTemplateAccessor) (Object) wishingFountain).wishingFountain$getPalettes().get(0);
         PosListData posList = new PosListData();
         BlockPos center = posStart.offset(CENTER);
         //记录之前方块的位置

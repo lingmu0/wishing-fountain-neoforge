@@ -1,80 +1,23 @@
 package io.github.poisonsheep.wishingfountain.inventory;
 
 import net.minecraft.core.NonNullList;
-import net.minecraft.world.Container;
-import net.minecraft.world.ContainerHelper;
-import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.crafting.Ingredient;
 import net.minecraft.world.item.crafting.RecipeInput;
 
-public class WFRecipeInventory implements Container, RecipeInput {
-
+/** A recipe input, not a player inventory: these interfaces map differently on Fabric. */
+public final class WFRecipeInventory implements RecipeInput {
     public static final int RECIPES_SIZE = 8;
     public final NonNullList<ItemStack> items = NonNullList.withSize(RECIPES_SIZE, ItemStack.EMPTY);
-
-    public WFRecipeInventory() {
-    }
-
     public ItemStack getMatchIngredient(Ingredient ingredient) {
         return items.stream().filter(ingredient).findFirst().orElse(ItemStack.EMPTY);
     }
-
-    @Override
-    public int getContainerSize() {
-        return RECIPES_SIZE;
+    public int getContainerSize() { return RECIPES_SIZE; }
+    @Override public int size() { return RECIPES_SIZE; }
+    @Override public boolean isEmpty() { return items.stream().allMatch(ItemStack::isEmpty); }
+    @Override public ItemStack getItem(int index) {
+        return index < 0 || index >= RECIPES_SIZE ? ItemStack.EMPTY : items.get(index);
     }
-
-    @Override
-    public int size() {
-        return RECIPES_SIZE;
-    }
-
-    @Override
-    public boolean isEmpty() {
-        for (ItemStack stack : this.items) {
-            if (!stack.isEmpty()) {
-                return false;
-            }
-        }
-        return true;
-    }
-
-    @Override
-    public ItemStack getItem(int index) {
-        return index < 0 || this.getContainerSize() <= index ? ItemStack.EMPTY : this.items.get(index);
-    }
-
-    @Override
-    public ItemStack removeItem(int index, int count) {
-        return ContainerHelper.removeItem(this.items, index, count);
-    }
-
-    @Override
-    public ItemStack removeItemNoUpdate(int index) {
-        return ContainerHelper.takeItem(this.items, index);
-    }
-
-    @Override
-    public void setItem(int index, ItemStack stack) {
-        this.items.set(index, stack);
-    }
-
-    @Override
-    public void setChanged() {
-    }
-
-    @Override
-    public boolean stillValid(Player player) {
-        return true;
-    }
-
-    @Override
-    public void clearContent() {
-        this.items.clear();
-    }
-
-    public NonNullList<ItemStack> getItems() {
-        return items;
-    }
+    public void setItem(int index, ItemStack stack) { items.set(index, stack); }
+    public NonNullList<ItemStack> getItems() { return items; }
 }
